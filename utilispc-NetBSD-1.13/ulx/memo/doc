@@ -1,0 +1,140 @@
+
+ulx
+
+
+リクエストの形式
+
+設定
+	(with-buffer-request (display reqest-code) -> macros.l
+	  (data depth)
+	  (resource-id wid)
+	  (window parent)
+	  (chard16 x y)
+	  ....
+	                )
+
+	
+
+	<- (type-name param)
+	順序はパケットの中身の順序に対応している
+	3,4 バイト目はパケットの長さと決まっているので現れていない。
+
+
+(defmacro with-buffer-request...
+	-> with-buffer-request-function-nolock	-> buffer.l
+	-> with-buffer-request-function		-> buffer.l
+	-> with-buffer-request-internal
+
+	-> with-buffer
+	-> display-invoke-after-function
+
+
+
+
+(open-display
+	-> open-x-stream	サーバとのstream接続
+	-> make-buffer
+	-> display-connect	サーバとのＸプロトコルによる接続確立
+
+	-> intialize-resource-allocator
+	-> intialize-predefined-atoms
+
+	-> close-display
+
+
+(display-connect
+	-> with-buffer-output	; bufmac.l
+
+	-> card8-put		; macros.l でマクロ生成
+	-> card16-put
+	-> write-sequence-char	; buffer.l
+	-> buffer-force-output
+
+	-> with-buffer-input
+	-> buffer-input
+
+
+	with-buffer-output の引数として与える :sizes は clx-overlapping-arrays
+	の時にしか使われていない。ULX では省略してしまっていいものと思われる
+
+
+
+
+(with-buffer-output (buffer) length index . body)
+	-> index>=, index+
+	buffer-flush
+
+	buffer-boffset を (or index (buffer-boffset buffer)),
+	buffer-bbuf を (buffer-obuf8 buffer) にセットする。(dynamic extent)
+	buffer-boffset, buffer-bbuf は read-* マクロ中で書き込み先として参照
+	されている
+
+	%buffer-sizes を macrolet しているが、clx-overlapping-arrays の
+	時にしか使用していないと思われる。
+
+	lets の中に buffer-boffset, buffer-bbuf とあるのは何のためだか不明
+
+(write-sequence-char
+	 buffer boffset data &optional (start 0) (end (length data)) transform)
+	-> write-sequence-card8		(buffer.l)
+	-> char->card8 (default transform function)
+
+	transform はバイトの変換関数
+	使われているのは display-connect(display.l) と
+	put-string (macros.l: define-accessor string) だけ。
+	いずれも transform は使われていない。
+	
+	(write-sequence-card8
+		-> write-list-card8[-with-transform]
+		-> write-simple-array-card8[-with-transform]
+		-> write-vector-card8[-with-transform]
+
+		called from:
+		write-sequence-char (transform=char->card8)
+		write-sequence-int8 (transform=int8->card8)
+
+		write-sequence-int8 は全く使われていない
+
+(writing-buffer-chunks (type args decls &body body)
+	-> with-buffer-output
+	-> buffer-flush
+
+** bufmac.l
+(set-buffer-offset (value)
+	
+	buffer-boffset の設定
+	clx-overlapping-arrays の場合は %buffer-sizes を参照して
+	必要に応じて buffer-woffset, buffer-loffset の補正をする。
+
+** buffer.l
+(buffer-input (buffer vector start end &optional timeout)
+	"Read into VECTOR from the buffer stream
+	 Timeout, when non-nil, is in seconds
+	 Returns non-nil if EOF encountered
+	 Returns :TIMEOUT when timeout exceeded
+
+	-> buffer-dead
+	-> wrap-buf-input
+	-> buffer-input-wait-function
+
+
+(wrap-buf-input ((buffer) &body body)
+	Error recovery wrapper.
+
+	Genera ではネットワークのエラーに対して connection close などの処理を
+	行なっているらしいが、utilisp ではただの (prog . body)
+
+** dependent.l
+(holding-lock
+(current-process
+(without-interrupts
+(process-block
+(make-process-lock
+	並列システム用
+
+(conditional-store
+	-> without-interrupts
+	並列システム用？よくわからず
+
+(without-aborts
+	???

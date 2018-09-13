@@ -1,0 +1,60 @@
+buffer.cl:(defun write-bitvector256 (buffer boffset map)
+buffer.cl:(defun write-sequence-int32
+buffer.cl:(defun write-sequence-card32
+buffer.cl:(defun write-vector-card32-with-transform (buffer boffset data start end transform)
+buffer.cl:(defun write-vector-card32 (buffer boffset data start end)
+buffer.cl:(defun write-simple-array-card32-with-transform (buffer boffset data start end transform)
+buffer.cl:(defun write-simple-array-card32 (buffer boffset data start end)
+buffer.cl:(defun write-list-card32-with-transform (buffer boffset data start end transform)
+buffer.cl:(defun write-list-card32 (buffer boffset data start end)
+buffer.cl:(defun write-sequence-int16
+buffer.cl:(defun write-vector-int16-with-transform (buffer boffset data start end transform)
+buffer.cl:(defun write-vector-int16 (buffer boffset data start end)
+buffer.cl:(defun write-simple-array-int16-with-transform (buffer boffset data start end transform)
+buffer.cl:(defun write-simple-array-int16 (buffer boffset data start end)
+buffer.cl:(defun write-list-int16-with-transform (buffer boffset data start end transform)
+buffer.cl:(defun write-list-int16 (buffer boffset data start end)
+buffer.cl:(defun write-sequence-card16
+buffer.cl:(defun write-vector-card16-with-transform (buffer boffset data start end transform)
+buffer.cl:(defun write-vector-card16 (buffer boffset data start end)
+buffer.cl:(defun write-simple-array-card16-with-transform (buffer boffset data start end transform)
+buffer.cl:(defun write-simple-array-card16 (buffer boffset data start end)
+buffer.cl:(defun write-list-card16-with-transform (buffer boffset data start end transform)
+buffer.cl:(defun write-list-card16 (buffer boffset data start end)
+buffer.cl:(defun write-sequence-int8
+buffer.cl:(defun write-sequence-card8
+buffer.cl:(defun write-vector-card8-with-transform (buffer boffset data start end transform)
+buffer.cl:(defun write-vector-card8 (buffer boffset data start end)
+buffer.cl:(defun write-simple-array-card8-with-transform (buffer boffset data start end transform)
+buffer.cl:(defun write-simple-array-card8 (buffer boffset data start end)
+buffer.cl:(defun write-list-card8-with-transform (buffer boffset data start end transform)
+buffer.cl:(defun write-list-card8 (buffer boffset data start end)
+buffer.cl:(defun write-sequence-char
+
+buffer.cl:(defun read-bitvector256 (buffer-bbuf boffset data)
+buffer.cl:(defun read-sequence-int32 (reply-buffer result-type nitems &optional transform data
+buffer.cl:(defun read-sequence-card32 (reply-buffer result-type nitems &optional transform data
+buffer.cl:(defun read-vector-card32-with-transform (reply-buffer nitems data transform start index)
+buffer.cl:(defun read-vector-card32 (reply-buffer nitems data start index)
+buffer.cl:(defun read-simple-array-card32-with-transform (reply-buffer nitems data transform start index)
+buffer.cl:(defun read-simple-array-card32 (reply-buffer nitems data start index)
+buffer.cl:(defun read-list-card32-with-transform (reply-buffer nitems data transform start index)
+buffer.cl:(defun read-list-card32 (reply-buffer nitems data start index)
+buffer.cl:(defun read-sequence-int16 (reply-buffer result-type nitems &optional transform data
+buffer.cl:(defun read-sequence-card16 (reply-buffer result-type nitems &optional transform data
+buffer.cl:(defun read-vector-card16-with-transform (reply-buffer nitems data transform start index)
+buffer.cl:(defun read-vector-card16 (reply-buffer nitems data start index)
+buffer.cl:(defun read-simple-array-card16-with-transform (reply-buffer nitems data transform start index)
+buffer.cl:(defun read-simple-array-card16 (reply-buffer nitems data start index)
+buffer.cl:(defun read-list-card16-with-transform (reply-buffer nitems data transform start index)
+buffer.cl:(defun read-list-card16 (reply-buffer nitems data start index)
+buffer.cl:(defun read-sequence-int8 (reply-buffer result-type nitems &optional transform data
+buffer.cl:(defun read-sequence-card8 (reply-buffer result-type nitems &optional transform data
+buffer.cl:(defun read-vector-card8-with-transform (reply-buffer nitems data transform start index)
+buffer.cl:(defun read-vector-card8 (reply-buffer nitems data start index)
+buffer.cl:(defun read-simple-array-card8-with-transform (reply-buffer nitems data transform start index)
+buffer.cl:(defun read-simple-array-card8 (reply-buffer nitems data start index)
+buffer.cl:(defun read-list-card8-with-transform (reply-buffer nitems data transform start index)
+buffer.cl:(defun read-list-card8 (reply-buffer nitems data start index)
+buffer.cl:(defun read-sequence-char (reply-buffer result-type nitems &optional transform data
+buffer.cl:(defun read-sequence-string (buffer-bbuf length nitems result-type

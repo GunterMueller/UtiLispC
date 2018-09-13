@@ -1,0 +1,64 @@
+UtiLisp/C のインストール法
+
+1. このソース一式がおかれているディレクトリにカレントディレクトリを移します．
+
+2. configureの実行
+
+ 標準設定で /usr/local 以下にインストールする場合は．
+
+  % configure
+
+とだけ実行してください．他のディレクトリ(たとえば /home/ktanaka)以下に
+インストールする場合は，
+
+  % configure --prefix=パス名
+
+のようにすると，/usr/local/{bin, lib}以下ではなく「パス名/{bin, lib}」
+以下にインストールされます．
+
+
+ 他に，以下のようなオプションが指定できます．
+
+ --disable-compiler 
+                    Lispコンパイラはmake, install しません．
+ --disable-dynamic-load 
+                    code-load を disableします．
+ --disable-bignum   無限長整数(bignum)を使いません．
+ --disable-flonum   浮動小数点数(flonum)を使いません．
+ --disable-mmap-stack-check 
+                    mmapを用いたスタックチェックをおこないません．
+ --disable-align-typecheck
+                    bus alignment errorを用いた型チェックをおこないません
+ --disable-invalid-access-jump
+                    invalid accessを用いたエラー処理ルーチンの呼び出しをおこないません
+ --disable-tagged-arithmetic
+                    SPARCのタグつき演算命令を用いません
+
+3. makeを実行します. 
+
+  % make
+
+4. make installを実行します．
+  
+ プレフィクス/bin/utilispが作成され，プレフィクス/lib/utilisp以下にファ
+イルがコピーされます．
+
+----------------------------------------------------------------------
+2000年12月21日 現在
+
+SPARC SunOS 5.6 gcc 2.8.1
+SPARC SunOS 5.8 gcc 2.95.2
+i386 SunOS 5.6 egcs-2.91.51
+i386  VineLinux 2.0 egcs-2.91.66
+i386  FreeBSD-4.2 gcc 2.95.2
+i386  FreeBSD-3.3 gcc 2.7.2.3
+
+上で動作を確認しています．他の環境での動作例，問題発生がありましたら報
+告をお願いします．他にも質問，バグ発見のお知らせは,
+
+	utilispc-reports@ipl.t.u-tokyo.ac.jp
+
+までお願いします. 
+
+
+

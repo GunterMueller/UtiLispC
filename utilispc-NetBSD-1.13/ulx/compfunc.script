@@ -1,0 +1,26 @@
+(putd 'defun '(macro lambda (_x) (list 'putd (list 'quote (car _x))
+	(list 'function (cons 'lambda (cdr _x)))))) 
+(defun exfile (lispfile)
+   (catch 'exfile
+    (lets ((standard-input (inopen (stream (alloc lispfile)))) 
+           (err:end-of-file (function (lambda (stg (dum)) (throw 'exfile)))))
+     (loop (eval (read))))))
+(exfile "../lib/lispsys.main.l")
+(setq optimize-level 2  compiler-tempdir "/tmp")
+(setq CC "gcc")
+(exfile "loadulx.l")
+(setq a '(
+"../lib/lispcomp/comp.l"
+"../lib/lispcomp/c-cd.l"
+"../lib/lispcomp/c-fix.l"
+"../lib/lispcomp/c-list.l"
+"../lib/lispcomp/c-map.l"
+"../lib/lispcomp/c-pred.l"
+"../lib/lispcomp/c-spec.l"
+"../lib/lispcomp/compile.l"
+"../lib/lispcomp/dump.l"
+"../lib/lispcomp/opt.l"
+))
+(mapc a #'exfile)
+(exfile "script")
+(quit)

@@ -1,0 +1,371 @@
+(comment "dump")
+
+(declare (cc-optimize-level cc sparc) special)
+
+(defun c:dump-c (fn code (standard-output standard-output))
+   (lets ((printlevel 0) (printlength 0))
+    (setq current-cfn (c:funcname fn))
+    (format "/nstatic WORD /c_cf(na, fp)/n" current-cfn)
+    (format "WORD *fp;/n")
+    (setq code (c:optimize code))
+    (cond ((null code) (format "{}/n"))
+          ((memq (car code) '(block begin)) (c:dump code 1))
+          (t (c:dump-left-brace t)
+             (c:dump-s code 1)
+             (c:dump-right-brace t)))))
+
+(defun c:dump (x ind)
+   (c:dump-indent ind)
+   (cond ((eq x t) (princ "true"))
+         ((atom x) (princ x))
+         ((consp (car x)) (princ "???"))
+         ((get (car x) 'dump) (funcall (get (car x) 'dump) (cdr x) ind))
+         (t (c:dump (car x) 0)
+            (c:dump-left-paren)
+            (c:dump-args (cdr x))
+            (c:dump-right-paren))))
+
+(defun c:dump-s (x ind)
+   (c:dump x ind)
+   (and (c:need-semicolon x) (c:dump-semicolon t)))
+
+(defun c:dump-args (args)
+   (do ((l args (cdr l)))
+       ((or (null l) (null (cdr l))) (and l (c:dump (car l) 0)))
+       (c:dump (car l) 0)
+       (c:dump-comma)))
+
+(defun c:need-semicolon (x)
+   (not (and (consp x) (memq (car x) '(if for while block begin label)))))
+
+(defun c:dump-local (vars ind)
+   (mapc vars
+      (function
+       (lambda (x)
+        (c:dump-indent ind)
+        (cond ((atom x) (format "WORD /c;/n" x))
+              (t (format "/c /c;/n" (first x) (second x))))))))
+
+(defun c:unary-op (op x)
+   (c:dump-left-paren)
+   (princ op)
+   (c:dump-left-paren)
+   (c:dump (car x) 0)
+   (c:dump-right-paren)
+   (c:dump-right-paren))
+
+(defun c:binary-op (op x)
+   (c:dump-left-paren)
+   (c:dump (first x) 0)
+   (princ op)
+   (c:dump (second x) 0)
+   (c:dump-right-paren))
+
+(defun c:binary*-op (op x)
+   (c:dump-left-paren)
+   (c:dump (first x) 0)
+   (mapc (cdr x) (function (lambda (y) (princ op) (c:dump y 0))))
+   (c:dump-right-paren))
+
+(defnprop ! (lambda (x ind) (c:unary-op "!" x)) dump)
+
+(defnprop star (lambda (x ind) (c:unary-op "*" x)) dump)
+
+(defnprop & (lambda (x ind) (c:unary-op "&" x)) dump)
+
+(defnprop cast (lambda (x ind) (c:unary-op (car x) (cdr x))) dump)
+
+(defnprop = (lambda (x ind) (c:binary-op " = " x)) dump)
+
+(defnprop > (lambda (x ind) (c:binary-op " > " x)) dump)
+
+(defnprop < (lambda (x ind) (c:binary-op " < " x)) dump)
+
+(defnprop == (lambda (x ind) (c:binary-op " == " x)) dump)
+
+(defnprop != (lambda (x ind) (c:binary-op " != " x)) dump)
+
+(defnprop <= (lambda (x ind) (c:binary-op " <= " x)) dump)
+
+(defnprop >= (lambda (x ind) (c:binary-op " >= " x)) dump)
+
+(defnprop /+ (lambda (x ind) (c:binary*-op " + " x)) dump)
+
+(defnprop /-
+   (lambda (x ind)
+    (cond ((= (length x) 1) (c:unary-op "-" x)) (t (c:binary*-op " - " x))))
+   dump)
+
+(defnprop * (lambda (x ind) (c:binary*-op " * " x)) dump)
+
+(defnprop // (lambda (x ind) (c:binary*-op " / " x)) dump)
+
+(defnprop /-= (lambda (x ind) (c:binary-op " -= " x)) dump)
+
+(defnprop /+= (lambda (x ind) (c:binary-op " += " x)) dump)
+
+(defnprop *= (lambda (x ind) (c:binary-op " *= " x)) dump)
+
+(defnprop //= (lambda (x ind) (c:binary-op " /= " x)) dump)
+
+(defnprop && (lambda (x ind) (c:binary*-op " && " x)) dump)
+
+(defnprop || (lambda (x ind) (c:binary*-op " || " x)) dump)
+
+(defnprop /-> (lambda (x ind) (c:binary-op " -> " x)) dump)
+
+(defnprop comma (lambda (x ind) (c:binary*-op " , " x)) dump)
+
+(defnprop for
+   (lambda (x ind)
+    (princ "for ")
+    (c:dump-left-paren)
+    (c:dump-args (first (car x)))
+    (c:dump-semicolon)
+    (c:dump (second (car x)) 0)
+    (c:dump-semicolon)
+    (c:dump-args (third (car x)))
+    (c:dump-right-paren t)
+    (c:dump-block nil (cdr x) (/1+ ind)))
+   dump)
+
+(defnprop while
+   (lambda (x ind)
+    (princ "while ")
+    (c:dump-left-paren)
+    (c:dump (car x) 0)
+    (c:dump-right-paren t)
+    (c:dump-block nil (cdr x) (/1+ ind)))
+   dump)
+
+(defnprop dowhile
+   (lambda (x ind)
+    (princ "do ")
+    (terpri)
+    (c:dump-s (first x) (/1+ ind))
+    (c:dump-indent ind)
+    (princ "while ")
+    (c:dump-left-paren)
+    (c:dump (second x) 0)
+    (c:dump-right-paren t))
+   dump)
+
+(defnprop if
+   (lambda (x ind)
+    (princ "if ")
+    (c:dump-left-paren)
+    (c:dump (first x) 0)
+    (c:dump-right-paren t)
+    (cond ((and (consp (second x)) (eq (caadr x) 'if))
+           (c:dump-indent ind)
+           (c:dump-left-brace t)
+           (c:dump-s (second x) (/1+ ind))
+           (c:dump-indent ind)
+           (c:dump-right-brace t))
+          (t (c:dump-s (second x) (/1+ ind))))
+    (cond ((consp (cddr x))
+           (c:dump-indent ind)
+           (princ "else ")
+           (terpri)
+           (c:dump-s (third x) (/1+ ind)))))
+   dump)
+
+(defnprop block (lambda (x ind) (c:dump-block (car x) (cdr x) ind)) dump)
+
+(defnprop begin (lambda (x ind) (c:dump-block nil x ind)) dump)
+
+(defun c:dump-block (vars body ind)
+   (cond ((atom body) (c:dump-semicolon t))
+         ((null (cdr body)) (c:dump-s (car body) ind))
+         (t (c:dump-left-brace t)
+            (and vars (c:dump-local vars ind))
+            (mapc body (function (lambda (x) (c:dump-s x ind))))
+            (setq body (car (last body)))
+            (and (consp body) (eq (car body) 'label) (c:dump-semicolon t))
+            (c:dump-indent (/1- ind))
+            (c:dump-right-brace t))))
+
+(defprop cfunc-call
+   (lambda (x ind)
+    (format "(WORD)/c_cf" (c:funcname (first x)))
+    (c:dump-left-paren)
+    (c:dump-args (cdr x))
+    (c:dump-right-paren))
+   dump)
+
+(defprop predef-call
+   (lambda (x ind)
+    (format "(WORD)/c" (c:predef-name (first x)))
+    (c:dump-left-paren)
+    (c:dump-args (cdr x))
+    (c:dump-right-paren))
+   dump)
+
+(defnprop label (lambda (x ind) (princ (first x)) (c:dump-colon t)) dump)
+
+(defnprop goto (lambda (x ind) (format "goto /s" (first x))) dump)
+
+(defnprop nop (lambda (x inf)) dump)
+
+(defnprop flonum
+   (lambda (x)
+    (lets ((buf (make-string 30)) (s (outopen (string-stream buf))))
+     (prin1 (car x) s)
+     (close s)
+     (sset buf (string-search-char "^" buf) "E")
+     (princ (substring
+               buf
+               (cond ((= (sref buf 0) (character "+")) 1) (t 0))
+               (string-search-char 0 buf)))))
+   dump)
+
+(defun c:dump-indent (n) (do ((i 0 (/1+ i))) ((<= n i)) (tyo 9)))
+
+(defun c:dump-left-paren ((nl)) (princ "(") (and nl (terpri)))
+
+(defun c:dump-right-paren ((nl)) (princ ")") (and nl (terpri)))
+
+(defun c:dump-left-brace ((nl)) (princ "{") (and nl (terpri)))
+
+(defun c:dump-right-brace ((nl)) (princ "}") (and nl (terpri)))
+
+(defun c:dump-semicolon ((nl)) (princ ";") (and nl (terpri)))
+
+(defun c:dump-colon ((nl)) (princ ":") (and nl (terpri)))
+
+(defun c:dump-comma ((nl)) (princ ",") (and nl (terpri)))
+
+(defun c:predef-name (sym)
+   (cond ((not (predefinedp sym)) (c:error "not a predefined function" sym))
+         ((get sym 'predefname))
+         (t (string-append (c:funcname sym) "_f"))))
+
+(comment "---------")
+
+(defun reset-compilation-flags nil
+   (do ((l (oblist) (cdr l)))
+       ((atom l))
+       (remprop (car l) 'special)
+       (remprop (car l) 'redefine)
+       (remprop (car l) 'fix-value)
+       (remprop (car l) 'constant)))
+
+(defun reset nil (reset-compilation-flags))
+
+(defun c:make-command (cf of)
+   (cond ((string-equal cc "gcc") (c:make-gcc cf of))
+	 ((string-equal cc "cc") (c:make-cc cf of))
+	 (t nil)))
+
+(defun c:make-gcc (cf of)
+   (string-append
+      "gcc @SHARED_OPTION@ -I"
+      system_header_path
+;      " -fwritable-strings -o "
+       " -o "
+      of
+      (cond ((/0< cc-optimize-level) " -O ") (t " "))
+      cf))
+
+(defun c:make-cc (cf of)
+   (cond ((and typecheck fix-flag) (c:make-cc-sed cf of))
+	 (t (c:make-simple-cc cf of))))
+
+(defun c:make-simple-cc (cf of)
+   (string-append
+      "cc -c -I"
+      system_header_path
+      (cond (sparc " -DSPARC ") (t " "))
+      "-O"
+      (number-image cc-optimize-level)
+      " -o "
+      of
+      " "
+      cf))
+
+(defun c:make-cc-sed (cf of)
+   (lets ((file (c:tempfile)) (sf1 (string-append file ".s"))
+	  (sf2 (string-append file "s.s")))
+    (string-append
+       "cc -S -I"
+       system_header_path
+       (cond (sparc " -DSPARC ") (t " "))
+       "-O"
+       (number-image cc-optimize-level)
+       " -o "
+       sf1
+       " "
+       cf
+       " "
+       system_header_path
+       "utilisp.il; (sed -e 's/taddcc/taddcctv/' -e 's/tsubcc/tsubcctv/' "
+       sf1
+       " > "
+       sf2
+       "); as -o "
+       of
+       " "
+       sf2
+       "; /bin/rm "
+       sf1
+       " "
+       sf2)))
+
+(defun c:funcname (sym)
+   (lets ((p (assq sym compiling-funcs)))
+    (cond (p (cdr p))
+          (t (c:make-funcname
+                sym
+                (translate
+                   (cond ((<= (character 0) (sref sym 0) (character "9"))
+                          (string-append "_" sym))
+                         (t (substring sym)))
+                   c-chartable))))))
+
+(defun c:make-funcname (sym name)
+   (cond ((mem (function (lambda (x y) (string-equal x (cdr y))))
+               name
+               compiling-funcs)
+          (c:make-funcname sym (string-append name "_")))
+         (t (push `(,sym . ,name) compiling-funcs) name)))
+
+(defun c:push (sym lst) (and (memq sym lst) (push sym lst)))
+
+(defun c:init nil
+   (declare
+      (? attention-handler break default-macrotable default-obvector 
+       default-readtable digits err:abend-exit err:argument-type 
+       err:buffer-overflow err:catch err:end-of-file err:floating-overflow 
+       err:function err:go err:implementation-restriction err:index err:io 
+       err:number-of-arguments err:open-close err:read err:return 
+       err:unbound-variable err:undefined-function err:variable 
+       err:zero-division intern lower-case macrotable manager-id obvector 
+       openfiles printlength printlevel prompt readtable special-characters 
+       standard-input standard-output sysparm system-name terminal-input 
+       terminal-output toplevel upper-case use-lower usebq version)
+      special)
+   (or (boundp 'cc) (setq cc "gcc"))
+   (or (boundp 'cc-optimize-level) (setq cc-optimize-level 4))
+   (setq sparc t typecheck t ubvcheck t indexcheck t udfcheck t c-chartable 
+    "________________________________________________0123456789_______ABCDEFGHIJKLMNOPQRSTUVWXYZ______abcdefghijklmnopqrstuvwxyz_____________________________________________________________________________________________________________________________________")
+   (setq compile-readtable (vector 256 default-readtable))
+   (vset compile-readtable 44 (logor (vref compile-readtable 44) 128))
+   (vset compile-readtable 96 (logor (vref compile-readtable 96) 128))
+   (mapc '((/0= . "fixzerop_f") (/0< . "fixplusp_f") (/0> . "fixminp_f") 
+           (= . "fixeq_f") (# . "fixneq_f") (<> . "fixneq_f") (> . "fixgt_f") 
+           (>= . "fixge_f") (< . "fixlt_f") (<= . "fixle_f") 
+           (/- . "fixdifference_f") (/+ . "fixplus_f") (* . "fixtimes_f") 
+           (// . "fixquotient_f") (\ . "fixremainder_f") (/1+ . "fixadd1_f") 
+           (/1- . "fixsub1_f") (^ . "fixexpt_f") (/0=$ . "flozerop_f") 
+           (/0<$ . "floplusp_f") (/0>$ . "flominsp_f") (=$ . "floeq_f") 
+           (#$ . "floneq_f") (/-$ . "flodifference_f") (/+$ . "floplus_f") 
+           (*$ . "flotimes_f") (//$ . "floquotient_f") (\$ . "floremainder_f") 
+           (/1+$ . "floadd1_f") (/1-$ . "flosub1_f") (>$ . "flogt_f") 
+           (>=$ . "floge_f") (<$ . "flolt_f") (<=$ . "flole_f") 
+           (^$ . "exptflo_f") (listp . "consp_f") (systemcall . "call_f")
+	   (systemchdir . "cd_f") (systemgetenv . "getenv_f")
+	   (systemputenv . "putenv_f"))
+      (function (lambda (x) (putprop (car x) (cdr x) 'predefname)))))
+
+(c:init)
+

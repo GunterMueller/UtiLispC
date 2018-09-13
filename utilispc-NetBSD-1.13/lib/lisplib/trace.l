@@ -1,0 +1,43 @@
+(declare (*tracecount*) special)
+(macro trace (l) (setq *tracecount* 0) `(mapc ',l (function *tr)))
+(macro trace-when (l)
+   (setq *tracecount* 0)
+   `(mapc ',(cdr l) (function (lambda (fn) (*tr fn ',(car l))))))
+(defun *tr (x (pred t))
+   (lets ((d (getd x)))
+    (cond ((atom d) (format "/s cannot be traced/n" x))
+          ((prog2 (and (eq (car d) 'macro) (pop d))
+                  (and (listp d) (eq (car d) 'lambda)))
+           (*utr x)
+           (rplacd (cdr d)
+              `((*tr* ',x
+                      ,(cons 'list (*tr1 (second d)))
+                      ',(cddr d)
+                      ',pred)))))))
+(defun *tr1 (l)
+   (mapcar l (function (lambda (x) (cond ((atom x) x) (t (car x)))))))
+(defun *tr* (*fn* *args* *body* *pred*)
+   (cond ((eval *pred*)
+          (lets ((*tracecount* (/1+ *tracecount*)))
+           (format "/t+/s#/s: /s/n"
+                   (remainder (* 2 (/1- *tracecount*)) 20)
+                   *fn*
+                   *tracecount*
+                   *args*)
+           (lets ((*result* (eval `(progn . ,*body*))))
+            (format "/t-/s#/s: /s/n"
+                    (remainder (* 2 (/1- *tracecount*)) 20)
+                    *fn*
+                    *tracecount*
+                    *result*)
+            *result*)))
+         (t (eval `(progn . ,*body*)))))
+(macro untrace (l) `(mapc ',l (function *utr)))
+(defun *utr (x)
+   (lets ((d (getd x)))
+    (or (atom d)
+        (and (eq (car d) 'macro) (prog2 (pop d) (atom d)))
+        (neq (car d) 'lambda)
+        (atom (third d))
+        (neq (car (third d)) '*tr*)
+        (rplacd (cdr d) (second (fourth (third d)))))))

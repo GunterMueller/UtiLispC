@@ -1,0 +1,180 @@
+./configureで求められるもの
+
+--disable-compiler
+  コンパイラをサポートしないシステムを作る．
+
+ makecode??.c などはいらない．
+ lispsys.l は lispsys.main.o ではなく lispsys.main.l を exfile する．
+ lib/lispcomp 以下は make しない．
+ libutilisp.a などはいらない．
+
+#define NO_COMPILER 1
+
+--disable-dynamic-load
+  disable-compilerでenableしていたら文句を言う
+
+  libdl などは
+  
+#define NO_DYNAMIC_LOAD 1
+
+--disable-mmap-stack-check
+  mmapがないのに enableしていたら文句を言う
+  signalがないのに enable していたら文句を言う．
+
+#define NO_MMAP_STACK_CHECK 1
+
+--disable-bignum
+
+#define NO_BIGNUM 1
+
+--disalbe-flonum
+
+#define NO_FLONUM 1
+
+.....
+
+doubleではなくfloatというのはどの程度需要があるか?
+
+捕まえるだけでなく値が欲しい時は，sigactionを使う?
+
+#include <signal.h>
+#include <sys/ucontext.h>
+
+void segv_sigaction(int sig, siginfo_t *sip, void *dummy)
+{
+  ucontext_t *uap=(ucontext_t *)dummy;
+  printf("segv_sigaction=%d,pc=0x%x?\n",sig,uap->uc_mcontext.gregs[EIP]);
+  exit(1);
+}
+struct sigaction segvact;
+int main(int ac, char **ag)
+{
+  segvact.sa_sigaction=segv_sigaction;
+  sigaction(SIGSEGV,&segvact,NULL);
+  *(int *)0=0;
+  return 0;
+}
+
+Solaris for Intel では PCは捕まえられた．
+
+Linux for Intel では，sip, dummy 共に 0 なのでなすすべなし?
+
+Solaris for SPARC では
+ EIP -> REG_PC
+でOK
+
+FreeBSD では，
+ sigactionでも sa_handler のみ
+ 値は?
+
+muleでは，
+
+#ifdef POSIX_SIGNALS
+  sigset_t procmask;
+  sigset_t blocked;
+  struct sigaction sigint_action;
+  sigaddset (&blocked, SIGINT );  sigaction (SIGINT , 0, &sigint_action );
+  sigprocmask (SIG_BLOCK, &blocked, &procmask);
+
+sysdep.cの中に
+
+
+SPARC
+USEBUSERR
+USESEGV
+などを整理する
+
+USEBUSERR
+-> ALIGN_TYPE_CHECK
+
+それ以外に不適切な USEBUSERRの例
+
+#ifdef USEBUSERR
+#define stack_overflow() value(UNBOUND)=0
+#else
+#define stack_overflow() sigill()
+#endif
+
+gccがインストールされていても cc を選びたい時は?
+env CC=cc ./configure
+
+uildを指定せずにhostを指定した場合、 host
+のシステムタイプ名と同一になります。 クロスコンパイルを行う場合、クロスコン
+パイル用ツール、特にCコンパイラの 名前を、configureのコマンドラインに指定す
+る必要があります。 たとえば以下のように: 
+
+CC=m68k-coff-gcc configure --target=m68k-coff
+
+AC_CHECK_SIZEOF(int)
+を使う必要あり．
+
+`--cache-file=/dev/null'とすることで、configureのデバッグのために キャッシュ
+を無効にできます。`config.status'は`--rech
+
+Solarisでは 
+ ieee_handler の代りに sigfpeを使う．
+
+       sigemptyset, sigfillset, sigaddset, sigdelset, sigismember
+       - POSIX signal set operations.
+
+SYNOPSIS
+       #include <signal.h>
+
+       int sigemptyset(sigset_t *set);
+
+       int sigfillset(sigset_t *set);
+
+       int sigaddset(sigset_t *set, int signum);
+
+       int sigdelset(sigset_t *set, int signum);
+
+       int sigismember(const sigset_t *set, int signum);
+
+float の10進表示の portableな実装法は?
+
+ecvtは Solaris, Linux
+FreeBSDにはなかった．
+
+frexp を使う?
+
+Solaris 2.X for SPARCは，ほぼ完璧
+
+----------------------------------------------------------------------
+#include <signal.h>
+#include <ucontext.h>
+#include <sys/reg.h>
+
+/* regno */
+int getreg(ucontext_t *uap,int regno){
+  int *sp=uap->uc_mcontext.gregs[SP];
+  printf("regno=%d,sp=0x%x\n",regno,sp);
+  if(16 <= regno && regno<=31){
+    return sp[regno-16];
+  } 
+  else {
+    return uap->uc_mcontext.gregs[regno-1+G1];
+  }
+}
+
+void sigbus(int sig, siginfo_t *siginfo, ucontext_t *uap){
+  char *regnames[]={"psr","pc","npc","y","g1","g2","g3","g4","g5","g6","g7","o0"
+,"o1","o2","o3","o4","o5","o6","o7"};
+  int pcreg,reg,o0,i;
+  int *sp;
+  pcreg=uap->uc_mcontext.gregs[PC];
+  printf("segv_sigaction=%d,pc=0x%x?\n",sig,pcreg);
+  reg=((*(int *)pcreg)>>14)&31;
+  printf("pc=0x%x, *pc=0x%x, reg=0x%x,regval=0x%x\n",pcreg,*(int *)pcreg, reg,ge
+treg(uap,reg));
+  exit(1);
+}
+
+char buf[8];
+char *cptr=&buf[3];
+int main(int ac, char **ag){
+  signal(SIGBUS,sigbus);
+    *(int *)(cptr-2)=0;
+}
+----------------------------------------------------------------------
+
+sysfnfix.sはSun4ひょうじゅんCのばぐのがれ

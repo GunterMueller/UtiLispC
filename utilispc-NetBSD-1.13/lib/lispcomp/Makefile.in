@@ -1,0 +1,47 @@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+UTILISP_LIBDIR = @libdir@/utilisp
+
+LFILES = c-cd.l \
+	c-fix.l \
+	c-list.l \
+	c-map.l \
+	c-pred.l \
+	c-spec.l \
+	comp.l \
+	compile.l \
+	comprc.l \
+	dump.l \
+	opt.l
+
+OFILES = c-cd.o \
+	c-fix.o \
+	c-list.o \
+	c-map.o \
+	c-pred.o \
+	c-spec.o \
+	comp.o \
+	compile.o \
+	dump.o \
+	opt.o
+
+ofiles : $(OFILES)
+
+$(OFILES) : $(LFILES) makeall.l
+	UTILISP_LIB_PATH=../ UTILISP_HEADER_PATH=../../src ../../src/utilisp -N -n < makeall.l
+
+install_lfiles :
+	-mkdir  $(UTILISP_LIBDIR)/lispcomp
+	cp $(LFILES) $(UTILISP_LIBDIR)/lispcomp
+	cd $(UTILISP_LIBDIR)/lispcomp; chmod 644 $(LFILES)
+
+install_ofiles :
+	-mkdir  $(UTILISP_LIBDIR)/lispcomp
+	cp $(OFILES) $(UTILISP_LIBDIR)/lispcomp
+	cd $(UTILISP_LIBDIR)/lispcomp; chmod 644 $(OFILES)
+
+uninstall_ofiles :
+	cd $(UTILISP_LIBDIR)/lispcomp; rm -f $(OFILES)
+
+clean :
+	-rm -f $(OFILES)

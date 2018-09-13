@@ -1,0 +1,324 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(src/cmpdef.h)
+
+AC_CONFIG_HEADER(src/config.h)
+dnl Checks for programs.
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+AC_PROG_RANLIB
+AC_CHECK_PROGS(M4,m4 gm4)
+AC_SUBST(M4)
+AC_CHECK_PROGS(PERL,perl gperl)
+AC_SUBST(PERL)
+
+dnl Checks for libraries.
+dnl Replace `main' with a function in -ldl:
+AC_CHECK_LIB(dl, main)
+dnl Replace `main' with a function in -lm:
+AC_CHECK_LIB(m, main)
+
+AC_CANONICAL_SYSTEM
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS(fcntl.h sys/file.h sys/ioctl.h sys/time.h unistd.h sys/reg.h ucontext.h)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_C_INLINE
+AC_HEADER_TIME
+AC_STRUCT_TM
+
+dnl Checks for library functions.
+AC_FUNC_ALLOCA
+AC_HEADER_MAJOR
+AC_FUNC_MEMCMP
+AC_FUNC_MMAP
+AC_TYPE_SIGNAL
+AC_FUNC_VFORK
+AC_CHECK_FUNCS(putenv select socket dlopen)
+AC_CHECK_FUNCS(signal ieee_handler sigsetmask)
+AC_CHECK_FUNCS(memmove bcopy)
+
+AC_MSG_CHECKING(whether to enable compiler)
+AC_ARG_ENABLE(compiler,
+[ --disable-compiler      disable compiler.],
+,[ enableval="yes"])
+
+if test "$enableval" = yes; then
+       AC_MSG_RESULT(yes)
+       libutilisp="libutilisp"       
+       install_libutilisp="install_libutilisp"       
+       COMPOBJS='$(COMPOBJS)'
+else
+       libutilisp=""
+       install_libutilisp=""
+       COMPOBJS=""
+       AC_DEFINE(NO_COMPILER)
+       AC_MSG_RESULT(no)
+fi
+AC_SUBST(libutilisp)
+AC_SUBST(install_libutilisp)
+AC_SUBST(COMPOBJS)
+
+AC_MSG_CHECKING(whether to enable dynamic load)
+AC_ARG_ENABLE(dynamic-load,
+[ --disable-dynamic-load      disable dyanmic loading.],
+,[ enableval="yes"])
+
+DLOPTION=""
+if test "$enableval" = yes; then
+       case $target in
+	    *linux*|*freebsd3*|*freebsd4*|sparc-*solaris2*|*netbsd*)
+		DLOPTION=-export-dynamic
+            ;;
+	    *)
+		DLOPTION=
+	    ;;
+       esac
+       DLOBJS='$(DLOBJS)'
+       compile='compile'
+       install_ofiles='install_ofiles'
+       AC_MSG_RESULT(yes)
+else
+       DLOBJS=""
+       compile=''
+       install_ofiles=''
+       AC_DEFINE(NO_DYNAMIC_LOAD)
+       AC_MSG_RESULT(no)
+fi
+AC_SUBST(DLOBJS)
+AC_SUBST(DLOPTION)
+AC_SUBST(compile)
+AC_SUBST(install_ofiles)
+
+       AC_MSG_RESULT($target)
+case $target in
+    *linux*|*freebsd3*|*freebsd4*|sparc-*solaris2*|*netbsd*)
+    SHARED_OPTION=" -shared "
+    ;;
+    *)
+    SHARED_OPTION=" -c "
+    ;;
+esac
+AC_SUBST(SHARED_OPTION)
+
+AC_MSG_CHECKING(whether to enable bignum support)
+AC_ARG_ENABLE(bignum,
+[ --disable-bignum      disable bignum suppor],
+,[ enableval="yes"])
+
+if test "$enableval" = yes; then
+    case $target in
+	sparc-*-sunos4*|sparc-*-solaris1*)
+	    BIGOBJS="bignum-sparc-sunos4.o"
+	    AC_MSG_RESULT(sparc native code)
+	    ;;
+	sparc-*-sunos5*|sparc-*-solaris2*)
+	    BIGOBJS="bignum-sparc-sunos5.o"
+	    AC_MSG_RESULT(sparc native code)
+	    ;;
+	mips*-*-*)
+	    BIGOBJS="bignum-mips.o"
+	    AC_MSG_RESULT(mips native code)
+	    ;;
+	*)
+	    BIGOBJS="bignum.o"
+	    AC_MSG_RESULT(C code)
+	    ;;
+    esac
+    else
+	BIGOBJS=""
+	AC_DEFINE(NO_BIGNUM)
+	AC_MSG_RESULT(no)
+fi
+AC_SUBST(BIGOBJS)
+
+AC_MSG_CHECKING(which assembly language file to include )
+case $target in
+    sparc-sun-sunos4*|sparc-sun-solaris1*)
+	ASMOBJS="savereg-sparc-sunos4.o"
+	;;
+    sparc-sun-sunos5*|sparc-sun-solaris2*)
+# 	ASMOBJS="savereg-sparc-sunos5.o"
+	ASMOBJS=""
+	;;
+    sparc-ap1000-sunos5*|sparc-ap1000-solaris2*)
+	ASMOBJS="setjmp-ap1000-sunos5.o"
+	;;
+    sparc-ap1000-sunos4*|sparc-ap1000-solaris1*)
+	ASMOBJS="setjmp-ap1000-sunos4.o"
+	;;
+    *)
+        ASMOBJS=""
+	;;
+esac
+AC_SUBST(ASMOBJS)
+AC_MSG_RESULT($ASMOBJS)
+
+
+AC_MSG_CHECKING(whether to enable flonum support)
+AC_ARG_ENABLE(flonum,
+[ --disable-flonum      disable flonum suppor],
+,[ enableval="yes"])
+
+if test "$enableval" = yes; then
+       FLOOBJS='$(FLOOBJS)'
+       AC_MSG_RESULT(yes)
+else
+       FLOOBJS=""
+       AC_DEFINE(NO_FLONUM)
+       AC_MSG_RESULT(no)
+fi
+AC_SUBST(FLOOBJS)
+
+AC_MSG_CHECKING(whether to enable mmap stack check)
+AC_ARG_ENABLE(mmap-stack-check,
+[ --disable-mmap-stack-check      disable mmap stack check],
+,[ enableval="yes"])
+
+if test "$enableval" = yes; then
+       AC_MSG_RESULT(yes)
+else
+       AC_DEFINE(NO_MMAP_STACK_CHECK)
+       AC_MSG_RESULT(no)
+fi
+
+need_special_signal=no
+
+AC_MSG_CHECKING(whether to cause SIGBUS usignal with miss-aligned access)
+AC_TRY_RUN([ 
+#include <signal.h>
+void sigbus(){
+  exit(0);
+}
+int main(int ac, char **ag){
+  char buf[8];
+  int i,r;
+  r=signal(SIGBUS,sigbus);
+  *(int *)(buf+2)=0;
+  return 1;
+} ],
+    signal_missalign=yes
+    AC_MSG_RESULT(yes)
+    AC_DEFINE(SIGNAL_MISSALIGN),
+    signal_missalign=no
+    AC_MSG_RESULT(no),
+    AC_MSG_RESULT(no)
+)
+
+AC_MSG_CHECKING(whether to catch type checks with alignment)
+AC_ARG_ENABLE(align-typecheck,
+[ --disable-align-typecheck      disable type checks with word alignment],
+,[ 
+ if test "$signal_missalign" = no; then
+   enableval="no"
+ else
+   enableval="yes"
+ fi
+])
+
+if test "$enableval" = yes; then
+   if test "$signal_missalign" = no; then
+     echo "Fatal error: --enable-align-typecheck with no word alignment processor"
+     exit 1;
+   fi
+       AC_MSG_RESULT(yes)
+       need_special_signal=yes
+       AC_DEFINE(ALIGN_TYPE_CHECK)
+else
+       AC_MSG_RESULT(no)
+fi
+
+case $target in
+    sparc-sun-sunos4*|sparc-sun-solaris1*)
+	signal_small_negative=yes
+	;;
+    sparc-sun-sunos5*|sparc-sun-solaris2*)
+	signal_small_negative=yes
+	;;
+    i386-pc-sunos5*|i386-pc-solaris2*)
+	signal_small_negative=yes
+	;;
+    mips*-*-*)
+	signal_small_negative=yes
+	;;
+    *)
+	signal_small_negative=no
+	;;
+esac
+
+AC_MSG_CHECKING(whether to catch type checks with alignment)
+AC_ARG_ENABLE(invalid-access-jump,
+[ --disable-invalid-access-jump      disable to use negative address access for go to error routine],
+,[ 
+ if test "$signal_small_negative" = no; then
+   enableval="no"
+ else
+   enableval="yes"
+ fi
+])
+
+if test "$enableval" = yes; then
+   if test "$signal_small_negative" = no; then
+     echo "Fatal error: --enable-invalid_access-jump with ...."
+     exit 1;
+   fi
+       AC_MSG_RESULT(yes)
+       need_special_signal=yes
+       AC_DEFINE(INVALID_ACCESS_JUMP)
+else
+       AC_MSG_RESULT(no)
+fi
+
+AC_MSG_CHECKING(whether to tagged arithmetic)
+AC_ARG_ENABLE(tagged-arithmetic,
+[ --disable-tagged-arithmetic      disable to use negative address access for go to error routine],
+,[ 
+ if test "$target_cpu" = sparc; then
+   enableval="yes"
+ else
+   enableval="no"
+ fi
+])
+
+if test "$enableval" = yes; then
+ if test "$target_cpu" != sparc; then
+     echo "Fatal error: --enable-tagged-arithmetic with NO SPARC processor"
+     exit 1;
+   fi
+       AC_MSG_RESULT(yes)
+       need_special_signal=yes
+       AC_DEFINE(TAGGED_ARITHMETIC)
+else
+       AC_MSG_RESULT(no)
+fi
+
+if test $need_special_signal = yes; then
+    case $target in
+    sparc-sun-sunos4*|sparc-sun-solaris1*)
+	SIGNALOBJS="signal-sparc-sunos4.o"
+	;;
+    sparc-sun-sunos5*|sparc-sun-solaris2*)
+	SIGNALOBJS="signal-sparc-sunos5.o"
+	;;
+    i386-pc-sunos5*|i386-pc-solaris2*)
+	SIGNALOBJS="signal-i386-sunos5.o"
+	;;
+    mips*-*-*)
+	SIGNALOBJS="signal-mips.o"
+	;;
+    *)
+         echo "Fatal error: special signal file is needed for $target "
+         exit 1;
+	;;
+    esac
+else
+    SIGNALOBJS=''
+fi
+AC_SUBST(SIGNALOBJS)
+dnl 
+
+AC_OUTPUT(Makefile lib/Makefile lib/lispcomp/Makefile lib/lisplib/Makefile lib/Makefile src/Makefile ulx/Makefile lib/lispcomp/dump.l)

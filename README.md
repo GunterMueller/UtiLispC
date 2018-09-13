@@ -14,3 +14,6 @@ UtiLisp/C on SPARC for Sun 4 and Sparc Station." [Wada 1990]
 This repository deals with UtiLisp/C.
 
 See http://www.softwarepreservation.org/projects/LISP/utilisp/ for more details.
+
+
+Note: The NetBSD version of utilispc 1.13 builds fine after adding "-m32" to the src/Makefile.

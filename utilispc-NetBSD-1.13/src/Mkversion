@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "char *version_string = \"version $Name: R113 $ `uname -sr` (`uname -m`)\";" > version.c

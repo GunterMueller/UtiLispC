@@ -1,0 +1,56 @@
++(nreverse (*x . *l0) *l)-(nreverse *l0 *l1)-(concat *l1 (*x) *l):
++(nreverse () ()):
+
++(concat (*a . *x) *y (*a . *z))-(concat *x *y *z):
++(concat () *y *y):
+
+; << 10-1 >>	reverse 30 element.
+
++(rev15 *x)-(nreverse ( 1  2  3  4  5  6  7  8  9 10
+                       11 12 13 14 15 ) *x):
+
++(bench101)
+-(eval (gctime) *gc1) -(eval (time) *time1)
+-(rev15 *x)
+-(eval (time) *time2) -(eval (gctime) *gc2)
+-(eval (difference *time2 *time1) *totaltime)
+-(eval (difference *gc2 *gc1 ) *gctime)
+-(eval (difference *time2 *time1 *gctime) *runtime)
+-(call print
+       ([10-1]  total = *totaltime   runtime = *runtime   and gc = *gctime)):
+
+; problem 2. quicksort.
+
++(qsort (*x . *l) *r *r0)
+      -(partition *l *x *l1 *l2)
+      -(qsort *l2 *r1 *r0)
+      -(qsort *l1 *r (*x . *r1)):
++(qsort () *r *r):
+
++(partition (*x . *l) *y (*x . *l1) *l2)
+      -(eval (lessp *x *y) t)
+      -(partition *l *y *l1 *l2):
++(partition (*x . *l) *y *l1 (*x . *l2))
+      -(partition *l *y *l1 *l2):
++(partition () *a () ()):
+
+; << 10-2 >>	sort 20 element.
+
++(sort20 *x)-(qsort (27 74 17 33 94 18 46 83 65  2
+                    32 53 28 85 99 47 28 82  6 11 ) *x ()):
+
++(bench102)
+-(eval (gctime) *gc1) -(eval (time) *time1)
+-(sort20 *x)
+-(eval (time) *time2) -(eval (gctime) *gc2)
+-(eval (difference *time2 *time1) *totaltime)
+-(eval (difference *gc2 *gc1 ) *gctime)
+-(eval (difference *time2 *time1 *gctime) *runtime)
+-(call print
+       ([10-2]  total = *totaltime   runtime = *runtime   and gc = *gctime)):
+
+; now measure the benchmarks.
+
+-(bench101):
+-(bench102):
+ok

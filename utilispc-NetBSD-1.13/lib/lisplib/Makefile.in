@@ -1,0 +1,39 @@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+UTILISP_LIBDIR = @libdir@/utilisp
+
+LFILES = amuse.l \
+	newed.l \
+	prind.l \
+	sort.l \
+	toplevel.l \
+	trace.l
+
+OFILES = amuse.o \
+	newed.o \
+	prind.o \
+	sort.o \
+	toplevel.o \
+	trace.o
+
+
+ofiles : $(OFILES)
+
+$(OFILES) : $(LFILES) makeall.l
+	UTILISP_LIB_PATH=../ UTILISP_HEADER_PATH=../../src ../../src/utilisp -N -n < makeall.l
+
+install_lfiles :
+	-mkdir -p  $(UTILISP_LIBDIR)/lisplib
+	cp $(LFILES) $(UTILISP_LIBDIR)/lisplib
+	cd $(UTILISP_LIBDIR)/lisplib; chmod 644 $(LFILES)
+
+install_ofiles :
+	-mkdir -p  $(UTILISP_LIBDIR)/lisplib
+	cp $(OFILES) $(UTILISP_LIBDIR)/lisplib
+	cd $(UTILISP_LIBDIR)/lisplib; chmod 644 $(OFILES)
+
+uninstall_ofiles :
+	cd $(UTILISP_LIBDIR)/lisplib; rm -f $(OFILES)
+
+clean :
+	-rm -f $(OFILES)

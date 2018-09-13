@@ -1,0 +1,88 @@
+(defun get-first (a)
+  (cond ((consp a)(car a))(t a)))
+
+(defun rearrange-keys (sym args)
+  (let ((x (gensym)))
+    (setplist x args)
+    (mapcar (get sym 'keys-order)
+	    (function (lambda (a)
+			(or (get x (get-first a)) (and (consp a)(cdr a)))
+			)))))
+
+
+(defmacro defun-keyarg (fun l . body)
+  (let ((hontai-name (intern (string-append fun "-f"))))
+    `(progn
+       (defun ,hontai-name ,(mapcar l 'get-first) . ,body)
+       (putprop ',fun
+	 ',(mapcar l
+	    (function
+	       (lambda (x)
+		 (cond ((atom x)
+			(intern (string-append ":" x)))
+		       (t (cons (intern (string-append ":" (first x)))
+				(second x)))))))
+	 'keys-order)
+	 
+       (macro ,fun (l)
+	      (cons ',hontai-name (rearrange-keys ',fun l))))))
+
+(defun-keyarg create-window (
+			     parent
+			     x
+			     y
+			     width
+			     height
+			     (depth 0) (border-width 0)
+			     (class :copy) (visual :copy)
+			     background border
+			     bit-gravity gravity
+			     backing-store backing-planes backing-pixel
+			     save-under event-mask do-not-propagate-mask
+			     override-redirect
+			     colormap cursor)
+;	 (window-id window wid)
+  (setl (window-id window) wid)
+  (selectq background
+	   (nil nil)
+	   (none (setq back-pixmap 0))
+	   (parent-relative (setq back-pixmap 1))
+	   (t (if (fixp (car k))
+		  (setq back-pixel background)
+		(setq back-pixmap (pixmap-id background)))
+	      ))
+  (selectq border
+	   (nil nil)
+	   (copy (setq border-pixmap 0))
+	   (t (if (fixp (car k))
+		  (setq border-pixel border)
+		(setq border-pixmap (pixmap-id border)))))
+  (when event-mask
+	(setq event-mask (encode-event-mask event-mask)))
+  (when do-not-propagate-mask
+	(setq do-not-propagate-mask (encode-device-event-mask do-not-propagate-mask)))
+  
+					;Make the request
+  (with-buffer-request (display *x-createwindow*)
+		       (data depth)
+		       (resource-id wid)
+		       (window parent)
+		       (int16 x y)
+		       (card16 width height border-width)
+		       ((member16 :copy :input-output :input-only) class)
+		       (resource-id (cond ((eq visual :copy)
+					   0)
+					  ((typep visual 'resource-id)
+					   visual)
+					  (t
+					   (visual-info-id visual))))
+		       (mask (card32 back-pixmap back-pixel border-pixmap border-pixel)
+			     ((member-vector *bit-gravity-vector*) bit-gravity)
+			     ((member-vector *win-gravity-vector*) gravity)
+			     ((member :not-useful :when-mapped :always) backing-store)
+			     (card32  backing-planes backing-pixel)
+			     ((member :off :on) override-redirect save-under)
+			     (card32 event-mask do-not-propagate-mask)
+			     ((or (member :copy) colormap) colormap)
+			     ((or (member :none) cursor) cursor)))
+  window))

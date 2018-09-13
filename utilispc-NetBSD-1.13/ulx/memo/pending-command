@@ -1,0 +1,317 @@
+;;; pending command related codes
+
+;;; buffer.l
+(defstruct (pending-command (:copier nil) (:predicate nil))
+  (sequence 0 :type card16)
+  (reply-buffer nil :type (or null reply-buffer))
+  (process nil)
+  (next nil #-explorer :type #-explorer (or null pending-command)))
+
+;;; input.l
+(defvar *pending-command-free-list* nil)
+
+(defun start-pending-command (display)
+  (declare (type display display))
+  (let ((pending-command (or (threaded-atomic-pop *pending-command-free-list*
+						  pending-command-next pending-command)
+			     (make-pending-command))))
+    (declare (type pending-command pending-command))
+    (setf (pending-command-reply-buffer pending-command) nil)
+    (setf (pending-command-process pending-command) (current-process))
+    (setf (pending-command-sequence pending-command)
+	  (ldb (byte 16 0) (1+ (buffer-request-number display))))
+    ;; Add the pending command to the end of the threaded list of pending
+    ;; commands for the display.
+    (with-event-queue-internal (display)
+      (threaded-nconc pending-command (display-pending-commands display)
+		      pending-command-next pending-command))
+    pending-command))
+
+(defun stop-pending-command (display pending-command)
+  (declare (type display display)
+	   (type pending-command pending-command))
+  (with-event-queue-internal (display)
+    ;; Remove the pending command from the threaded list of pending commands
+    ;; for the display.
+    (threaded-delete pending-command (display-pending-commands display)
+		     pending-command-next pending-command)
+    ;; Deallocate any reply buffers in this pending command
+    (loop
+      (let ((reply-buffer
+	      (threaded-pop (pending-command-reply-buffer pending-command)
+			    reply-next reply-buffer)))
+	(declare (type (or null reply-buffer) reply-buffer))
+	(if reply-buffer
+	    (deallocate-reply-buffer reply-buffer)
+	  (return nil)))))
+  ;; Deallocate this pending-command
+  (threaded-atomic-push pending-command *pending-command-free-list*
+			pending-command-next pending-command)
+  nil)
+
+;;; see also functions 
+;;; 	with-buffer-request-and-reply,
+;;;	read-reply
+;;;	read-input
+
+;;; maros.l
+(defmacro with-buffer-request-and-reply
+	  ((buffer opcode reply-size &key sizes multiple-reply inline)
+	   type-args &body reply-forms &environment env)
+  (declare (indentation 0 4 1 4 2 1))
+  (let* ((inner-reply-body
+	   `(with-buffer-input (.reply-buffer. :display .display.
+					       ,@(and sizes (list :sizes sizes)))
+	      nil ,@reply-forms))
+	 (reply-body
+	   (if (or (not (symbolp reply-size)) (constantp reply-size))
+	       inner-reply-body
+	     `(let ((,reply-size (reply-data-size (the reply-buffer .reply-buffer.))))
+		(declare (type array-index ,reply-size))
+		,inner-reply-body))))
+    (if (and (null inline) (macroexpand '(use-closures) env))
+	`(with-buffer-request-and-reply-function
+	   ,buffer ,multiple-reply
+	   #'(lambda (.display.)
+	       (declare (type display .display.))
+	       (with-buffer-request-internal (.display. ,opcode)
+		 ,@type-args))
+	   #'(lambda (.display. .reply-buffer.)
+	       (declare (type display .display.)
+			(type reply-buffer .reply-buffer.))
+	       .display. .reply-buffer.
+	       ,reply-body))
+      `(let ((.display. ,buffer)
+	     (.pending-command. nil)
+	     (.reply-buffer. nil))
+	 (declare (type display .display.)
+		  (type (or null pending-command) .pending-command.)
+		  (type (or null reply-buffer) .reply-buffer.))
+	 (unwind-protect
+	     (progn 
+	       (with-buffer (.display.)
+		 (setq .pending-command. (start-pending-command .display.))
+		 (without-aborts
+		   (with-buffer-request-internal (.display. ,opcode)
+		     ,@type-args))
+		 (buffer-force-output .display.)
+		 (display-invoke-after-function .display.))
+	       ,@(if multiple-reply
+		     `((loop
+			 (setq .reply-buffer. (read-reply .display. .pending-command.))
+			 (when ,reply-body (return nil))
+			 (deallocate-reply-buffer (shiftf .reply-buffer. nil))))
+		   `((setq .reply-buffer. (read-reply .display. .pending-command.))
+		     ,reply-body)))
+	   (when .reply-buffer.
+	     (deallocate-reply-buffer .reply-buffer.))
+	   (when .pending-command.
+	     (stop-pending-command .display. .pending-command.)))))))
+
+;;; input.l
+(defun read-error-input (display sequence reply-buffer token)
+  (declare (type display display)
+	   (type reply-buffer reply-buffer)
+	   (type card16 sequence))
+  (tagbody
+    start
+       (with-event-queue-internal (display)
+	 (let ((command 
+		 ;; Find any pending command with this sequence number.
+		 (threaded-dolist (pending-command (display-pending-commands display)
+						   pending-command-next pending-command)
+		   (when (= (pending-command-sequence pending-command) sequence)
+		     (return pending-command)))))
+	   (declare (type (or null pending-command) command))
+	   (cond ((not (null command))
+		  ;; Give this reply to the pending command
+		  (threaded-nconc reply-buffer (pending-command-reply-buffer command)
+				  reply-next reply-buffer)
+		  (process-wakeup (pending-command-process command)))
+		 ((member :immediately (display-report-asynchronous-errors display))
+		  ;; No pending command and we should report the error immediately
+		  (go report-error))
+		 (t
+		  ;; No pending command found, count this as an asynchronous error
+		  (threaded-nconc reply-buffer (display-asynchronous-errors display)
+				  reply-next reply-buffer)))))
+       (return-from read-error-input nil)
+    report-error
+       (note-input-complete display token)
+       (apply #'report-error display
+	      (prog1 (make-error display reply-buffer t)
+		     (deallocate-event reply-buffer)))))
+
+(defun read-reply-input (display sequence length reply-buffer)
+  (declare (type display display)
+	   (type (or null reply-buffer) reply-buffer)
+	   (type card16 sequence)
+	   (type array-index length))
+  (unwind-protect 
+      (progn
+	(when (index< *replysize* length)
+	  (let ((repbuf nil))
+	    (declare (type (or null reply-buffer) repbuf))
+	    (unwind-protect
+		(progn
+		  (setq repbuf (allocate-reply-buffer length))
+		  (buffer-replace (reply-ibuf8 repbuf) (reply-ibuf8 reply-buffer)
+				  0 *replysize*)
+		  (deallocate-event (shiftf reply-buffer repbuf nil)))
+	      (when repbuf
+		(deallocate-reply-buffer repbuf))))
+	  (when (buffer-input display (reply-ibuf8 reply-buffer) *replysize* length)
+	    (return-from read-reply-input t))
+	  (setf (reply-data-size reply-buffer) length))
+	(with-event-queue-internal (display)
+	  ;; Find any pending command with this sequence number.
+	  (let ((command 
+		  (threaded-dolist (pending-command (display-pending-commands display)
+						    pending-command-next pending-command)
+		    (when (= (pending-command-sequence pending-command) sequence)
+		      (return pending-command)))))
+	    (declare (type (or null pending-command) command))
+	    (when command 
+	      ;; Give this reply to the pending command
+	      (threaded-nconc (shiftf reply-buffer nil)
+			      (pending-command-reply-buffer command)
+			      reply-next reply-buffer)
+	      (process-wakeup (pending-command-process command)))))
+	nil)
+    (when reply-buffer
+      (deallocate-reply-buffer reply-buffer))))
+
+(defun read-event-input (display code reply-buffer)
+  (declare (type display display)
+	   (type card8 code)
+	   (type reply-buffer reply-buffer))
+  ;; Push the event in the input buffer on the display's event queue
+  (setf (event-code reply-buffer)
+	(get-internal-event-code display code))
+  (enqueue-event reply-buffer display)
+  nil)
+
+(defun note-input-complete (display token)
+  (declare (type display display))
+  (when (eq (display-input-in-progress display) token)
+    ;; Indicate that input is no longer in progress
+    (setf (display-input-in-progress display) nil)
+    ;; Let the event process get the first chance to do input
+    (let ((process (display-event-process display)))
+      (when (not (null process))
+	(process-wakeup process)))
+    ;; Then give processes waiting for command responses a chance
+    (unless (display-input-in-progress display)
+      (with-event-queue-internal (display)
+	(threaded-dolist (command (display-pending-commands display)
+				  pending-command-next pending-command)
+	  (process-wakeup (pending-command-process command)))))))
+
+(defun read-input (display timeout force-output-p predicate &rest predicate-args)
+  (declare (type display display)
+	   (type (or null number) timeout)
+	   (type boolean force-output-p)
+	   (dynamic-extent predicate-args))
+  (declare (type function predicate)
+	   (downward-funarg predicate))
+  (let ((reply-buffer nil)
+	(token (or (current-process) (cons nil nil))))
+    (declare (type (or null reply-buffer) reply-buffer))
+    (unwind-protect 
+	(tagbody
+	  loop
+	     (when (display-dead display)
+	       (x-error 'closed-display :display display))
+	     (when (apply predicate predicate-args)
+	       (return-from read-input nil))
+	     ;; Check and see if we have to force output
+	     (when (and force-output-p
+			(or (and (not (eq (display-input-in-progress display) token))
+				 (not (conditional-store
+					(display-input-in-progress display) nil token)))
+			    (null (buffer-listen display))))
+	       (go force-output))
+	     ;; Ensure that ony one process is reading input.
+	     (unless (or (eq (display-input-in-progress display) token)
+			 (conditional-store (display-input-in-progress display) nil token))
+	       (if (eql timeout 0)
+		   (return-from read-input :timeout)
+		 (apply #'process-block "CLX Input Lock"
+			#'(lambda (display predicate &rest predicate-args)
+			    (declare (type display display)
+				     (dynamic-extent predicate-args)
+				     (type function predicate)
+				     (downward-funarg predicate))
+			    (or (apply predicate predicate-args)
+				(null (display-input-in-progress display))
+				(not (null (display-dead display)))))
+			display predicate predicate-args))
+	       (go loop))
+	     ;; Now start gobbling.
+	     (setq reply-buffer (allocate-event))
+	     (with-buffer-input (reply-buffer :sizes (8 16 32))
+	       (let ((type 0))
+		 (declare (type card8 type))
+		 ;; Wait for input before we disallow aborts.
+		 (unless (eql timeout 0)
+		   (let ((eof-p (buffer-input-wait display timeout)))
+		     (when eof-p (return-from read-input eof-p))))
+		 (without-aborts
+		   (let ((eof-p (buffer-input display buffer-bbuf 0 *replysize*
+					      (if force-output-p 0 timeout))))
+		     (when eof-p
+		       (when (eq eof-p :timeout)
+			 (if force-output-p
+			     (go force-output)
+			   (return-from read-input :timeout)))
+		       (setf (display-dead display) t)
+		       (return-from read-input eof-p)))
+		   (setf (reply-data-size reply-buffer) *replysize*)
+		   (when (= (the card8 (setq type (read-card8 0))) 1)
+		     ;; Normal replies can be longer than *replysize*, so we
+		     ;; have to handle them while aborts are still disallowed.
+		     (let ((value
+			     (read-reply-input
+			       display (read-card16 2)
+			       (index+ *replysize* (index* (read-card32 4) 4))
+			       (shiftf reply-buffer nil))))
+		       (when value
+			 (return-from read-input value))
+		       (go loop))))
+		 (if (zerop type)
+		     (read-error-input
+		       display (read-card16 2) (shiftf reply-buffer nil) token)
+		   (read-event-input
+		     display (read-card8 0) (shiftf reply-buffer nil)))))
+	     (go loop)
+	  force-output 
+	     (note-input-complete display token)
+	     (display-force-output display)
+	     (setq force-output-p nil)
+	     (go loop))
+      (when (not (null reply-buffer))
+	(deallocate-reply-buffer reply-buffer))
+      (note-input-complete display token))))
+
+(defun read-reply (display pending-command)
+  (declare (type display display)
+	   (type pending-command pending-command))
+  (loop
+    (when (read-input display nil nil
+		      #'(lambda (pending-command)
+			  (declare (type pending-command pending-command))
+			  (not (null (pending-command-reply-buffer pending-command))))
+		      pending-command)
+      (x-error 'closed-display :display display))
+    (let ((reply-buffer
+	    (with-event-queue-internal (display)
+	      (threaded-pop (pending-command-reply-buffer pending-command)
+			    reply-next reply-buffer))))
+      (declare (type reply-buffer reply-buffer))
+      ;; Check for error.
+      (with-buffer-input (reply-buffer)
+	(ecase (read-card8 0)
+	  (0 (apply #'report-error display
+		    (prog1 (make-error display reply-buffer nil)
+			   (deallocate-reply-buffer reply-buffer))))
+	  (1 (return reply-buffer)))))))

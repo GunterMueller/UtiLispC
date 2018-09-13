@@ -1,0 +1,87 @@
+#
+# Makefile of UtiLisp/C (i386 Solaris 2.X version)
+#
+
+INSTALL = @INSTALL@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+# Directory in which to install scripts.
+bindir = @bindir@
+UTILISP = $(bindir)/utilisp
+
+# Directory in which to install library files.
+libdir = @libdir@
+UTILISP_LIB_PATH = ${libdir}/utilisp/
+UTILISP_HEADER_PATH = ${libdir}/utilisp/
+LISPSYS = lispsys.l
+
+# Directory in which to install documentation info files.
+INFODIR = @infodir@
+
+COMPOBJS = makecode.o 
+DLOBJS = proglink.o 
+FLOOBJS = sysfnflo.o
+
+OBJECTS = main.o alloc.o eval.o init.o input.o output.o sysfnfix.o sysfnlist.o err.o sysfnspec.o sysfnmis.o sysfncd.o sysfnpred.o sysfnio.o sysfnvec.o sysfnmap.o sysfnhash.o sysfneval.o sysfnstg.o sysfnsym.o sysfnerr.o sysfnsys.o sysfnnum.o gc.o version.o sysdep.o @COMPOBJS@ @DLOBJS@ @BIGOBJS@ @FLOOBJS@ @ASMOBJS@  @SIGNALOBJS@
+LIBOBJECTS = main.o alloc.o eval.o libinit.o input.o output.o sysfnfix.o sysfnlist.o err.o sysfnspec.o sysfnmis.o sysfncd.o sysfnpred.o sysfnio.o sysfnvec.o sysfnmap.o sysfnhash.o sysfneval.o sysfnstg.o sysfnsym.o sysfnerr.o sysfnsys.o sysfnnum.o gc.o version.o sysdep.o @COMPOBJS@ @DLOBJS@ @BIGOBJS@ @FLOOBJS@ @ASMOBJS@ @SIGNALOBJS@
+DEFS = -DUTILISP_LIB_PATH=\"$(UTILISP_LIB_PATH)\" -DUTILISP_HEADER_PATH=\"$(UTILISP_HEADER_PATH)\" -DLISPSYS=\"$(LISPSYS)\" -DUTILISP=\"$(UTILISP)\"
+
+CC = @CC@
+CFLAGS = -I. @CFLAGS@ @DEFS@ $(DEFS)
+LIBS=@LIBS@
+
+all : utilisp @libutilisp@
+
+libutilisp : libutilisp.a 
+
+${OBJECTS} : Makefile
+utilisp : $(OBJECTS)
+	$(CC) @DLOPTION@ -o $@ $(OBJECTS) $(LIBS)
+
+libutilisp.a : $(LIBOBJECTS)
+	ar ruv $@ $(LIBOBJECTS)
+#	ranlib $@
+
+libinit.o : init.c
+	$(CC) -DUTILISPLIB $(CFLAGS) -c -o $@  init.c
+
+main.o : defvar.h
+gc.o : defvar.h
+
+version.c:
+	./Mkversion
+
+install : all install_bin @install_libutilisp@ install_header
+
+install_bin :	
+	-mkdir -p $(bindir)
+	$(INSTALL) -m 755 utilisp $(bindir)
+
+install_libutilisp:
+	-mkdir -p ${UTILISP_LIB_PATH}
+	$(INSTALL) -m 644 libutilisp.a ${UTILISP_LIB_PATH}
+	ranlib ${UTILISP_LIB_PATH}/libutilisp.a
+
+install_header:
+	$(INSTALL) -m 644 constdef.h ${UTILISP_LIB_PATH}
+	$(INSTALL) -m 644 cmpdef.h ${UTILISP_LIB_PATH}
+	$(INSTALL) -m 644 defvar.h ${UTILISP_LIB_PATH}
+	$(INSTALL) -m 644 config.h ${UTILISP_LIB_PATH}
+	$(INSTALL) -m 644 utilisp.il ${UTILISP_LIB_PATH}
+
+clean :
+	-rm version.c *.o utilisp libutilisp.a
+
+listing: listing.ps listing-index
+
+listing.ps:
+	jpr -f10 -t -N -T'UtiLisp/C (%f)  page: %p' -n *.c *.h sparcmuls.s > listing.ps
+
+listing-index:
+	mkindex *.c *.h sparcmuls.s > listing-index
+
+commitall :
+	-(cd lisplib; make commitall)
+	-(cd lispcomp; make commitall)
+	cvs commit *.c *.s *.h Makefile.*  lispsys.l CHANGES INSTALL README UPDATE utilisp.il utilisp.texi

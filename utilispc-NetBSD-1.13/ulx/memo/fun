@@ -1,0 +1,14 @@
+いちおううごいているかんすう
+
+open-display
+create-window
+create-pixmap
+create-gcontext
+copy-area
+draw-arc
+draw-line
+map-window
+unmap-window
+map-subwindows
+unmap-subwindows
+destroy-window
