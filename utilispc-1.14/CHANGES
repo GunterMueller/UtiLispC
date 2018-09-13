@@ -1,0 +1,245 @@
+1991.1.5 田中哲朗
+
+	* (string 0) -> 大きさ0のstringになっていた. 
+	  alstring->alnstringの変更
+
+1991.2.20 田中哲朗
+
+	* (quote 1 2 3)でエラーが出ない. これは後でバグ取りする
+
+1993.12.14 田中哲朗
+
+        * intern中にgcが起きると死ぬ. 
+          -> 直した. 
+
+1996.3.25 田中哲朗
+
+        * (make-string -1)が死ぬ
+          -> (vector -1)共々直した. 
+
+1996.5.23 富士通研の小沢さんの指摘 -> 0.996
+
+        * funcallの実行中にスタックにゴミが乗っている
+          -> 直した. 
+
+1996.6.6 田中哲朗 -> 0.997
+
+        * let のbody部がない時にゴミを返す. lets, catchも
+          -> 直した. 
+
+
+1996.6.24 田中哲朗 
+
+        * dldに関するルーチンを除去
+
+
+1996.6.25 田中哲朗 
+
+        * Solaris 2.X 用のproglink.cのコードを加える(ELFローダ)
+
+1996.6.26 田中哲朗 
+
+        * Solaris 2.X 用のproglink.cをELFローダからshared libraryに変更する
+
+1996.7.8  田中哲朗
+
+        * オプション '-gctype 1'によって Mark & Sweep GCを指定できるようにする
+
+        * Copying GCの高速化
+
+        * heapsizeK, heapfreeK, extendheapKの追加
+
+        * stackWM, init-stackWMの追加
+
+1996.8.23 田中哲朗
+
+        * (car 'foo) のエラーメッセージが 2 -- C#car
+          gccがレジスタg2を使うコードを出すが, g2はsigbusにたどり着く前
+          に壊れる
+          対策: ダミーのasm文でg2の使用を避ける. 
+
+        * Solaris 2.Xでもieee_handlerを使ってfloating overflowの検出をおこなう
+
+version 0.9993
+1996.9.2  田中哲朗
+
+        * difference, times, * を引数無しで読んだ場合の動作を変更(和田先生
+          の指摘による)
+
+        * vector同士の比較はequalでおこなう(和田先生の指摘による). 
+
+1996.9.3 田中哲朗
+
+        * 高橋さんの指摘により, lib/lispcomp/Makefileを直す
+
+version 0.9994
+1996.9.6 田中哲朗
+
+        * vector同士の比較は要素のeqに戻す. マニュアルを変更する. 
+
+        * min, max を引数無しで呼んだ時にエラーを出すように変更(和田
+          先生の指摘による)
+
+        * >, <, <=, >= を引数無しでも呼べるように, マニュアルを変更. 
+
+        * cutout, spreadをbignumで使えるようにする. 
+
+1996.10.2 田中哲朗
+
+        * gc.c 中で, gheapをレジスタ変数に指定している部分の条件を変更
+
+1996.10.9 田中哲朗
+
+        * i386版がinit-stackWMの中でエラーを出すのを修正
+
+        * USESEGVでも, parerr()を捕まえるように変更
+
+version 0.9995
+1996.10.14 田中哲朗
+
+        * string-amend{,-or,-and,-xor}で, fromが負の場合のチェックを行って
+          いなかったのを直す. 
+
+version 0.9996
+
+1996.11.29 富士通研の小沢さんの指摘
+
+        * gctype 1の時にGARBAGE_LINK2が最後に来た時にrelocate_pointersの
+          チェックがなっていない. 
+          -> 直した
+
+1997.2.18 田中哲朗
+
+        * Solaris 2.51 x86 用のMakefile作成, proglink.cの変更
+
+version 1.00
+
+1997.11.5 岩崎英哉
+
+	* funcall のバグの修正
+	* 起動時に lispsys.l としてコンパイルされたコードがロードされる
+	  ようにした
+	* 関数 loadfile の作成
+	  ---	.o ファイルをロードしようと試み，なければ .l ファイルを
+		exfile するもの
+	* 変数 version にアーキテクチャ，OS などの情報が入るようにした
+	* BSD/OS 用，Linux 用，FreeBSD 用の Makefile の拡充
+	  make 中に警告メッセージが出ないように修正
+	* バージョンを 1.00 に上げた
+
+version 1.01
+
+1997.11.13 岩崎英哉
+	* INSTALLの記述に i386 Solaris用の記述を追加
+	* lib/prind.lから127: (print "sokosoko") を除去
+
+version 1.02
+
+1998.3.12  富士通研の新井さんの指摘
+        * assq, assoc, ass で型チェックが抜けている点を修正
+        * -gctype 1 が Solaris 等で正しく動作しない点を修正
+
+version 1.03
+
+1998.7.2   田中英彦研の飯塚大介君の指摘
+        * proglink.c の make_base_nameを修正
+
+version 1.04
+
+1999.6.24  富士通研の新井さんの指摘
+        * floquotient_f() で最初の引数を checkflo で検査していない
+        * flodifference_f() で最初の引数を checkflo で検査していない
+        * mem の minarg と maxarg が 2 と 2 になっている
+        * copying gc で referenceがおかしくなる．
+        * pushで引数の数をチェックしていない．
+        * pop で引数の型をチェックしていない．
+
+1999.8.13  富士通研の新井さんの指摘
+        * reference の GCで落ちる．
+
+1999.11.26 宇都木君の指摘
+        * putpropのalconsでfp を指定するのを忘れていた．
+        * 他に，program-link, argv, stackWMでも見つかった．
+        * 関数のプロトタイプ宣言を使うように書き換え
+
+version 1.06
+
+2000.9.18 武市研読み会でのバグ発見
+        * constdef.h のLispオブジェクトの図を修正
+        * SPECSIZE が4になっていたのを2に修正
+        * bigtoflo に fp を渡していたのを変更
+        * sbrk のプロトタイプをヘッダから include するように変更
+        * main の引数チェックで，-n, -F は何もしないので外す
+        * lstacktop+10に-17を入れるのは，今は意味がないので外す．
+          err.cの中のチェックは FLONUM にする．
+        * differenceで，flonum, bignum以外のothersが来たときのチェック
+        * sysfnum.c で，a+BIGCODES -> &bigcodes(a,0) への書き換え
+        * nooterrからdoubleへの castが許されないため cofloを書き換え
+        * gccの __attribute__ ((noreturn)) をerr functionに追加
+        * (defun soko()) (funcall 'soko) -> nilにならない．
+        * ubverr, typeerrで ret2breakしていなかったのを入れる．
+        * udferrはWORDを返しても良い．
+        * pushで ubverrを return していたのは役に立たないのでやめる．
+        * bcopy, bzero, bcmpを memcpy, memmove, memset, memcmpに置き換え
+        * init.cで nilのdefinition, plistの初期化を1回に
+        * readrc で使うスタックを変更
+        * defeof_fで，promptのvalueがstringになっていることをチェック
+        * utilisp_fで，promptの値に bindで代入できることを忘れていた．
+        * eval時に symbolのdefinitionをとり続ける仕様をやめる．
+        * eval時にbstackのオーバフローチェックを入れる．
+        * eval時に，optional argumentの carがCONSであることのチェック
+        * symbol以外にsetqするエラー検出が SPARC 以外でできない．
+        * setqで奇数個の引数を与えた時の検出
+          -> 修正したが，エラーの種類は違う．
+        * mapcarで allistを使うように修正
+
+version 1.07
+
+2000.9.23
+        * configure化着手
+        * mapcar で引数の数のチェックがうまくいかない可能性
+        * nofixerr(a)のかわりに *(WORD *)a=0;をやめた．
+2000.9.27
+        * 環境変数 UTILISP_LIB_DIR, UTILISP_HEADER_DIR を元に
+          system-lib-path, system-header-path を設定する 
+
+2000.9.27-12.22
+        * autoconfへの対応
+	* return の()をやめる
+        * 環境変数 UTILISP_LIB_PATH, UTILISP_HEADER_PATH を参照するように変更
+        * -N オプション(lispsys.lを読まない)を追加
+        * lib も makeだけで処理
+        * printf_flonumでevctを使わないように変更
+        * 直接 shared objectをdlopenするように変更
+
+2000.12.22 version 1.08 release
+
+2000.12.22
+        * script言語として使えるように #!から行末までをコメントに
+        * script言語として使えるように オプション以外のものが来たら読んで実行
+
+2001.2.13
+        * bignum 同士の quotient が駄目になるバグを修正
+
+2002.4.3
+        * netbsdの時に ELF 形式の *.o を作成するように修正
+
+version 1.10 release
+
+2003.3.8
+        * BIGNUMの割り算の結果が狂うことがあることを修正
+2003.6.19
+	* /usr/X11R6/lib/libX11.so などを code-loadする際に
+	  dlopenにRTLD_GLOBAL をたてるようにする．
+
+version 1.11 release
+
+2007.8.24
+	* autoconf のバージョンを上げる
+	* lisplib/{common.l,deftype.l,defun.l,struct.l}をコンパイル対象から外す
+	* etextがなくてもget_etextがあればspecialが高速に判定できるようにする．
+	* -falign-functions=4 をつけるようにする
+	* コンパイル時のwarningを減らす
+	* MacOS Xでのローダブルモジュールの作成
+
+version 1.14 release

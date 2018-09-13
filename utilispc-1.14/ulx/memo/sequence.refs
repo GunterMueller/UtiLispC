@@ -1,0 +1,77 @@
+buffer.cl:      (read-sequence-card8
+buffer.cl:    (read-sequence-card8 reply-buffer result-type nitems #'card8->char data start index)))
+buffer.cl:	    (read-list-card8-with-transform
+buffer.cl:	  (read-list-card8 reply-buffer nitems result start index)))
+buffer.cl:	   (read-simple-array-card8-with-transform
+buffer.cl:	 (read-simple-array-card8 reply-buffer nitems result start index)))
+buffer.cl:	    (read-vector-card8-with-transform
+buffer.cl:	  (read-vector-card8 reply-buffer nitems result start index))))
+buffer.cl:      (read-sequence-card8
+buffer.cl:    (read-sequence-card8 reply-buffer result-type nitems #'card8->int8 data start index)))
+buffer.cl:	    (read-list-card16-with-transform reply-buffer nitems result transform start index)
+buffer.cl:	  (read-list-card16 reply-buffer nitems result start index)))
+buffer.cl:	   (read-simple-array-card16-with-transform
+buffer.cl:	 (read-simple-array-card16 reply-buffer nitems result start index)))
+buffer.cl:	    (read-vector-card16-with-transform
+buffer.cl:	  (read-vector-card16 reply-buffer nitems result start index))))
+buffer.cl:      (read-sequence-card16
+buffer.cl:    (read-sequence-card16 reply-buffer result-type nitems #'card16->int16 data start index)))
+buffer.cl:	    (read-list-card32-with-transform reply-buffer nitems result transform start index)
+buffer.cl:	  (read-list-card32 reply-buffer nitems result start index)))
+buffer.cl:	   (read-simple-array-card32-with-transform
+buffer.cl:	 (read-simple-array-card32 reply-buffer nitems result start index)))
+buffer.cl:	    (read-vector-card32-with-transform
+buffer.cl:	  (read-vector-card32 reply-buffer nitems result start index))))
+buffer.cl:      (read-sequence-card32
+buffer.cl:    (read-sequence-card32 reply-buffer result-type nitems #'card32->int32 data start index)))
+
+macros.cl:   `(read-sequence-char
+macros.cl:	(card8 'read-sequence-card8)
+macros.cl:	(int8 'read-sequence-int8)
+macros.cl:	(card16 'read-sequence-card16)
+macros.cl:	(int16 'read-sequence-int16)
+macros.cl:	(card32 'read-sequence-card32)
+macros.cl:	(int32 'read-sequence-int32))
+
+buffer.cl:      (write-sequence-card8
+buffer.cl:    (write-sequence-card8 buffer boffset data start end #'char->card8)))
+buffer.cl:	  (write-list-card8-with-transform buffer boffset data start end transform)
+buffer.cl:	  (write-list-card8 buffer boffset data start end)))
+buffer.cl:	 (write-simple-array-card8-with-transform buffer boffset data start end transform)
+buffer.cl:	 (write-simple-array-card8 buffer boffset data start end)))
+buffer.cl:	  (write-vector-card8-with-transform buffer boffset data start end transform)
+buffer.cl:	  (write-vector-card8 buffer boffset data start end)))))
+buffer.cl:      (write-sequence-card8
+buffer.cl:      (write-sequence-card8 buffer boffset start end #'int8->card8)))
+buffer.cl:	  (write-list-card16-with-transform buffer boffset data start end transform)
+buffer.cl:	  (write-list-card16 buffer boffset data start end)))
+buffer.cl:	 (write-simple-array-card16-with-transform buffer boffset data start end transform)
+buffer.cl:	 (write-simple-array-card16 buffer boffset data start end)))
+buffer.cl:	  (write-vector-card16-with-transform buffer boffset data start end transform)
+buffer.cl:	  (write-vector-card16 buffer boffset data start end)))))
+buffer.cl:	  (write-list-int16-with-transform buffer boffset data start end transform)
+buffer.cl:	  (write-list-int16 buffer boffset data start end)))
+buffer.cl:	 (write-simple-array-int16-with-transform buffer boffset data start end transform)
+buffer.cl:	 (write-simple-array-int16 buffer boffset data start end)))
+buffer.cl:	  (write-vector-int16-with-transform buffer boffset data start end transform)
+buffer.cl:	  (write-vector-int16 buffer boffset data start end)))))
+buffer.cl:	  (write-list-card32-with-transform buffer boffset data start end transform)
+buffer.cl:	  (write-list-card32 buffer boffset data start end)))
+buffer.cl:	 (write-simple-array-card32-with-transform buffer boffset data start end transform)
+buffer.cl:	 (write-simple-array-card32 buffer boffset data start end)))
+buffer.cl:	  (write-vector-card32-with-transform buffer boffset data start end transform)
+buffer.cl:	  (write-vector-card32 buffer boffset data start end)))))
+buffer.cl:      (write-sequence-card32
+buffer.cl:      (write-sequence-card32 buffer boffset start end #'int32->card32)))
+display.cl:    (write-sequence-char display 12 authorization-name)
+display.cl:    (write-sequence-char display
+macros.cl:	  (form `(write-sequence-char ,buffer (index+ buffer-boffset ,header-length)
+text.cl:	      (write-sequence-card16 display (index+ boffset 2) buffer 0 dst-chunk
+text.cl:	    (write-sequence-card16 display (index+ buffer-boffset 16) buffer 0 chunk
+
+
+fonts.cl:	(read-sequence-string
+fonts.cl:      (read-sequence-string
+macros.cl:   `(read-bitvector256 buffer-bbuf ,real-index ,data))
+requests.cl:      (read-sequence-string
+macros.cl:   `(write-bitvector256 ,buffer (index+ buffer-boffset ,real-index) ,map)))

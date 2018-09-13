@@ -1,0 +1,18 @@
+# distfile for transfering utilisp and kanji lib to keisu
+#
+#
+bin:
+	( /usr/local/bin/utilisp ) -> guri
+		install -h /usr/local/bin/utilisp;
+
+lib:
+	( /usr/local/lib/utilisp ) -> guri
+		install -R -h /usr/local/lib/utilisp;
+		except /usr/local/lib/utilisp/ulx;
+
+#kanjilib:
+#( ~kanji/lib ) -> guri
+#	install -R work/kanji.lib;
+#	except ~kanji/lib/RCS;
+#	except ~kanji/lib/old;
+##	except_pat .*~;

@@ -1,0 +1,413 @@
+for i in dependent.o longarith.o graphics.o fonts.o display.o  ulx.o attributes.o compout/requests.o compout/text.o compout/input.o compout/buffer.o  compout/gcontext.o; do \
+  rm -f $i; \
+done
+rm -f script
+touch script
+echo \(compfile \"compout/requests.l\" \"compout/requests.o\"\) >> script
+tool/coldef.pl -Bremout text.l < compfunc.list > comp.temp
+FILE: text.l
+defun: translate-default - extracted.
+defun: draw-glyphs8 - extracted.
+defun: draw-glyphs16 - extracted.
+diff comp.temp compout/text.l > /dev/null || mv comp.temp compout/text.l
+rm -f comp.temp
+echo \(compfile \"compout/text.l\" \"compout/text.o\"\) >> script
+echo \(compfile \"compout/input.l\" \"compout/input.o\"\) >> script
+echo \(compfile \"compout/buffer.l\" \"compout/buffer.o\"\) >> script
+echo \(compfile \"compout/gcontext.l\" \"compout/gcontext.o\"\) >> script
+echo \(compfile \"dependent.l\" \"dependent.o\"\) >> script
+echo \(compfile \"longarith.l\" \"longarith.o\"\) >> script
+echo \(compfile \"graphics.l\" \"graphics.o\"\) >> script
+echo \(compfile \"fonts.l\" \"fonts.o\"\) >> script
+echo \(compfile \"display.l\" \"display.o\"\) >> script
+echo \(compfile \"ulx.l\" \"ulx.o\"\) >> script
+echo \(compfile \"attributes.l\" \"attributes.o\"\) >> script
+if test -s script; then \
+  utilisp -h 7000 < compfunc.script; \
+fi
+> "/home/ken/work"
+> "gcc"
+> ld -Bstatic -A /usr/local/bin/utilisp -T 66000 ./socket.o  -lc -o /tmp/uti7545
+ld: ./socket.o: No such file or directory
+ld: : output write error: Bad file number
+/usr/local/lib/utilisp/lisplib/readmacro.l
+/usr/local/lib/utilisp/lisplib/common.l
+/usr/local/lib/utilisp/lisplib/struct.l
+/usr/local/lib/utilisp/lisplib/defun.l
+/usr/local/lib/utilisp/lisplib/deftype.l
+./defsetf.l
+./commonlib.l
+./longarith.l
+./depdefs.l
+./dependent.l
+./display.l
+./buffer.l
+./bufmac.l
+./ulx.l
+./macros.l
+./input.l
+./requests.l
+./graphics.l
+./gcontext.l
+./attributes.l
+./fonts.l
+./manager.l
+./text.l
+./translate.l
+./ulxlib.l
+nil
+> ld -Bstatic -A /usr/local/bin/utilisp -T 66000 /tmp/uti7545.o /usr/local/lib/utilisp/newlispcomp/comp.o /usr/local/lib/utilisp/newlispcomp/c-cd.o /usr/local/lib/utilisp/newlispcomp/c-fix.o /usr/local/lib/utilisp/newlispcomp/c-list.o /usr/local/lib/utilisp/newlispcomp/c-map.o /usr/local/lib/utilisp/newlispcomp/c-pred.o /usr/local/lib/utilisp/newlispcomp/c-spec.o /usr/local/lib/utilisp/newlispcomp/dump.o /usr/local/lib/utilisp/newlispcomp/compile.o /usr/local/lib/utilisp/newlispcomp/opt.o  -lc -o /tmp/uti8545
+nil
+> compiling (defun create-window (&key (parent ?) (x ?) (y ?) (width ?) (height ?) (depth 0) (border-width 0) (class ?) ???) (let* (? ? ? ? ? ? ?) (setf ? wid) (case background ? ? ? ?) (case border ? ? ?) (when event-mask ?) (when do-not-propagate-mask ?) (with-buffer-request ? ? ? ? ? ? ? ? ???) window))
+compiling (defun destroy-window (window) (with-buffer-request (? *x-destroywindow*) (window window)))
+compiling (defun destroy-subwindows (window) (with-buffer-request (? *x-destroysubwindows*) (window window)))
+compiling (defun add-to-save-set (window) (with-buffer-request (? *x-changesaveset*) (data 0) (window window)))
+compiling (defun remove-from-save-set (window) (with-buffer-request (? *x-changesaveset*) (data 1) (window window)))
+compiling (defun reparent-window (window parent x y) (with-buffer-request (? *x-reparentwindow*) (window window parent) (int16 x y)))
+compiling (defun map-window (window) (with-buffer-request (? *x-mapwindow*) (window window)))
+compiling (defun map-subwindows (window) (with-buffer-request (? *x-mapsubwindows*) (window window)))
+compiling (defun unmap-window (window) (with-buffer-request (? *x-unmapwindow*) (window window)))
+compiling (defun unmap-subwindows (window) (with-buffer-request (? *x-unmapsubwindows*) (window window)))
+compiling (defun circulate-window-up (window) (with-buffer-request (? *x-circulatewindow*) (data 0) (window window)))
+compiling (defun circulate-window-down (window) (with-buffer-request (? *x-circulatewindow*) (data 1) (window window)))
+compiling (defun query-tree (window &key (result-type ?)) (comment declare (type window window) (type t result-type)) (comment declare (values ? parent root)) (let (?) (multiple-value-bind ? ? ? ? ?)))
+compiling (defun intern-atom (display name) (or (atom-id name display) (let ? ?)))
+compiling (defun find-atom (display name) (or (atom-id name display) (let ? ?)))
+compiling (defun atom-name (display atom-id) (comment declare (type display display) (type resource-id atom-id)) (comment declare (values keyword)) (lookup-xatom display atom-id))
+compiling (defun atom-name-internal (display atom-id) (comment declare (type display display) (type resource-id atom-id) (values keyword)) (let (?) (setq keyword ?) (setf ? atom-id) keyword))
+compiling (defun delete-property (window property) (let* (? ?) (with-buffer-request ? ? ?)))
+compiling (defun get-property (window property &key type (start 0) end delete-p (result-type ?) transform) (let* (? ? ?) (multiple-value-bind ? ? ?)))
+compiling (defun list-properties (window &key (result-type ?)) (let (?) (multiple-value-bind ? ? ?)))
+compiling (defun selection-owner (display selection) (comment declare (type display display) (type xatom selection)) (comment declare (values ?)) (let (?) (comment declare ?) (multiple-value-bind ? ? ?)))
+compiling (defun set-selection-owner (display selection owner (time)) (comment declare (type display display) (type xatom selection) (type ? owner) (type timestamp time)) (let (?) (comment declare ?) (with-buffer-request ? ? ? ?) owner))
+compiling (defun convert-selection (selection type requestor (property) (time)) (comment declare (type xatom selection type) (type window requestor) (type ? property) (type timestamp time)) (let* (? ? ? ?) (comment declare ? ? ?) (with-buffer-request ? ? ? ? ?)))
+compiling (defun query-pointer (window) (let (?) (with-buffer-request-and-reply ? ? ?)))
+compiling (defun pointer-position (window) (let (?) (with-buffer-request-and-reply ? ? ?)))
+compiling (defun global-pointer-position (display) (with-buffer-request-and-reply (display *x-querypointer* 20 :sizes ?) (?) (values ? ? ?)))
+compiling (defun translate-coordinates (src src-x src-y dst) (comment declare (type window src) (type int16 src-x src-y) (type window dst)) (comment declare (values dst-x dst-y child)) (let (?) (with-buffer-request-and-reply ? ? ?)))
+compiling (defun warp-pointer (dst dst-x dst-y) (comment declare (type window dst) (type int16 dst-x dst-y)) (with-buffer-request (? *x-warppointer*) (resource-id 0) (window dst) (int16 0 0) (card16 0 0) (int16 dst-x dst-y)))
+compiling (defun warp-pointer-relative (display x-off y-off) (comment declare (type display display) (type int16 x-off y-off)) (with-buffer-request (display *x-warppointer*) (resource-id 0) (resource-id 0) (int16 0 0) (card16 0 0) (int16 x-off y-off)))
+compiling (defun warp-pointer-if-inside (dst dst-x dst-y src src-x src-y (src-width) (src-height)) (comment declare (type window dst src) (type int16 dst-x dst-y src-x src-y) (type ? src-width src-height)) (unless (or ? ?) (with-buffer-request ? ? ? ? ?)))
+compiling (defun warp-pointer-relative-if-inside (x-off y-off src src-x src-y (src-width) (src-height)) (comment declare (type window src) (type int16 x-off y-off src-x src-y) (type ? src-width src-height)) (unless (or ? ?) (with-buffer-request ? ? ? ? ? ?)))
+compiling (defun create-pixmap (&key (width ?) (height ?) (depth ?) (drawable ?)) (comment declare (type card8 depth) (type card16 width height) (type drawable drawable)) (comment declare (values pixmap)) (let* (? ? ?) (setf ? pid) (with-buffer-request ? ? ? ? ?) pixmap))
+compiling (defun free-pixmap (pixmap) (comment declare (type pixmap pixmap)) (let (?) (with-buffer-request ? ?) (deallocate-resource-id display ? ?)))
+compiling (defun clear-area (window &key (x 0) (y 0) width height exposures-p) (comment declare (type window window) (type int16 x y) (type ? width height) (type boolean exposures-p)) (unless (or ? ?) (with-buffer-request ? ? ? ? ?)))
+compiling (defun copy-area (src gcontext src-x src-y width height dst dst-x dst-y) (comment declare (type drawable src dst) (type gcontext gcontext) (type int16 src-x src-y dst-x dst-y) (type card16 width height)) (with-buffer-request (? *x-copyarea* :gc-force gcontext) (drawable src dst) (gcontext gcontext) (int16 src-x src-y dst-x dst-y) (card16 width height)))
+compiling (defun copy-plane (src gcontext plane src-x src-y width height dst dst-x ???) (comment declare (type drawable src dst) (type gcontext gcontext) (type pixel plane) (type int16 src-x src-y dst-x dst-y) (type card16 width height)) (with-buffer-request (? *x-copyplane* :gc-force gcontext) (drawable src dst) (gcontext gcontext) (int16 src-x src-y dst-x dst-y) (card16 width height) (card32 plane)))
+compiling (defun free-colormap (colormap) (comment declare (type colormap colormap)) (let (?) (with-buffer-request ? ?) (deallocate-resource-id display ? ?)))
+compiling (defun install-colormap (colormap) (comment declare (type colormap colormap)) (with-buffer-request (? *x-installcolormap*) (colormap colormap)))
+compiling (defun uninstall-colormap (colormap) (comment declare (type colormap colormap)) (with-buffer-request (? *x-uninstallcolormap*) (colormap colormap)))
+compiling (defun free-colors (colormap pixels (plane-mask 0)) (comment declare (type colormap colormap) (type sequence pixels) (type pixel plane-mask)) (with-buffer-request (? *x-freecolors*) (colormap colormap) (card32 plane-mask) (sequence pixels)))
+compiling (defun lookup-color (colormap name) (comment declare (type colormap colormap) (type stringable name)) (comment declare (values screen-color true-color)) (let* (? ? ?) (with-buffer-request-and-reply ? ? ?)))
+compiling (defun free-cursor (cursor) (comment declare (type cursor cursor)) (let (?) (with-buffer-request ? ?) (deallocate-resource-id display ? ?)))
+compiling (defun query-best-cursor (width height drawable) (let (? ?) (with-buffer-request-and-reply ? ? ?)))
+compiling (defun bell (display (percent-from-normal 0)) (comment declare (type display display) (type int8 percent-from-normal)) (with-buffer-request (display *x-bell*) (data ?)))
+compiling (defun change-access-host (display host family remove-p) (comment declare (type display display) (type ? host) (type ? family)) (unless (consp host) (setq host ?)) (let (? ?) (with-buffer-request ? ? ? ? ?)))
+warning: assumed non-macro --- host-address (in change-access-host)
+compiling (defun access-control (display) (comment declare (type display display)) (comment declare (values boolean)) (with-buffer-request-and-reply (display *x-listhosts* 2 :sizes 8) nil (boolean-get 1)))
+compiling (defun set-access-control (display enabled-p) (comment declare (type display display) (type boolean enabled-p)) (with-buffer-request (display *x-changeaccesscontrol*) (? enabled-p)) enabled-p)
+compiling (defun close-down-mode (display) (comment declare (type display display)) (comment declare (values ?)) (display-close-down-mode display))
+compiling (defun set-close-down-mode (display mode) (comment declare (type display display) (type ? mode)) (setf (display-close-down-mode display) mode) (with-buffer-request (display *x-changeclosedownmode* :sizes ?) (? mode)) mode)
+compiling (defun kill-client (display resource-id) (comment declare (type display display) (type resource-id resource-id)) (with-buffer-request (display *x-killclient*) (resource-id resource-id)))
+compiling (defun kill-temporary-clients (display) (comment declare (type display display)) (with-buffer-request (display *x-killclient*) (resource-id 0)))
+compiling (defun no-operation (display) (comment declare (type display display)) (with-buffer-request (display *x-nooperation*)))
+gcc -c -I/usr/local/lib/utilisp/ -fwritable-strings -o compout/requests.o -O /tmp/uti7545.c
+compiling (defun translate-default (src src-start src-end font dst dst-start) (values (if ? ? ?) nil nil))
+compiling (defun draw-glyphs8 (drawable gcontext x y sequence start end translate width) (lets (? ? ? ? ? ? ?) (with-buffer-request ? ? ? ? ?) (values next-start width)))
+compiling (defun draw-glyphs16 (drawable gcontext x y sequence start end translate width) (lets (? ? ? ? ? ? ? ?) (with-buffer-request ? ? ? ? ?) (values next-start width)))
+gcc -c -I/usr/local/lib/utilisp/ -fwritable-strings -o compout/text.o -O /tmp/uti7545.c
+compiling (defun allocate-event nil (or (threaded-atomic-pop *event-free-list* reply-next reply-buffer) (make-reply-buffer *replysize*)))
+compiling (defun deallocate-event (reply-buffer) (comment declare (type reply-buffer reply-buffer)) (setf (reply-size reply-buffer) *replysize*) (threaded-atomic-push reply-buffer *event-free-list* reply-next reply-buffer))
+compiling (defmacro define-extension (name . keys) (lets (? ?) (and events ?) (and errors ?) (let ? ?)))
+compiling (defun get-internal-event-code (display code) (comment declare (type display display) (type card8 code)) (comment declare (values ?)) (setq code (logand 127 code)) (if (< code *first-extension-event-code*) code (let* ? ? ? code)))
+compiling (defun get-external-event-code (display event) (comment declare (type display display) (type event-key event)) (comment declare (values card8)) (let (?) (comment declare ?) (when ? ?) code))
+compiling (defmacro extension-opcode (display name) (comment declare (type display display) (type stringable name)) (comment declare (values card8)) (let (?) (list ? ? ?)))
+compiling (defun initialize-extensions (display) (let (? ?) (dolist ? ?) (setf ? event-extensions) (setf ? extension-alist)))
+compiling (defun start-pending-command (display) (declare (*pending-command-free-list*) special) (let (?) (setf ? nil) (setf ? nil) (setf ? ?) (with-event-queue-internal ? ?) pending-command))
+compiling (defun stop-pending-command (display pending-command) (with-event-queue-internal (display) (threaded-delete pending-command ? pending-command-next pending-command) (comment threaded-dolist ? ?) (loop ?)) (threaded-atomic-push pending-command *pending-command-free-list* pending-command-next pending-command) nil)
+compiling (defun allocate-reply-buffer (size) (declare (*reply-buffer-free-lists*) special) (if (index<= size *replysize*) (allocate-event) (let ? ?)))
+compiling (defun deallocate-reply-buffer (reply-buffer) (declare (*reply-buffer-free-lists* *replysize*) special) (let (?) (if ? ? ?)))
+compiling (defun read-error-input (display sequence reply-buffer) (prog nil start (let ? ?) (return nil) report-error (report-error display ?)))
+compiling (defun read-reply-input (display sequence length reply-buffer) (prog nil (unwind-protect ? ?)))
+compiling (defun read-event-input (display code reply-buffer) (comment declare (type display display) (type card8 code) (type reply-buffer reply-buffer)) (setf (event-code reply-buffer) (get-internal-event-code display code)) (enqueue-event reply-buffer display) nil)
+compiling (defun read-input (display timeout force-output-p predicate predicate-arg) (let (?) (prog1 ? ?)))
+compiling (defun wait-for-event (display timeout force-output-p) (let (?) (unwind-protect ?)))
+compiling (defun read-reply (display pending-command) (loop (when ? ?) (let ? ?)))
+compiling (defun event-listen (display (timeout 0)) (comment declare (type display display) (type ? timeout) (values number-of-events-queued eof-or-timeout)) (let* (? ? ?) (comment declare ? ?) (if queue ? ?)))
+compiling (defun queue-event (display event-key &rest args &key append-p send-event-p &allow-other-keys) (comment declare (type display display) (type event-key event-key) (type boolean append-p send-event-p) (dynamic-extent args)) (unless (get event-key ?) (x-type-error event-key ?)) (let* (? ? ?) (comment declare ? ? ?) (unless event-code ?) (setf ? event-code) (with-display ? ? ? ? ? ?) (with-event-queue ? ?)))
+compiling (defun enqueue-event (new-event display) (comment declare (type reply-buffer new-event) (type display display)) (let* (? ?) (cond ? ?)))
+compiling (defmacro define-event (name code) (list (quote progn) (list ? ? ?) (list ? ? code)))
+compiling (defmacro check-consistency (names . args) (list (quote _check-consistency) (list ? names) (cons ? args)))
+compiling (defun event-loop-step-before (display timeout force-output-p current-event-symbol) (prog nil (unless ? ? ?) (let ? ? ?)))
+compiling (defun event-loop-step-after (display event discard-p current-event-symbol current-event-discarded-p-symbol) (cond (?) (discard-p ?) (t ?)) (set current-event-discarded-p-symbol nil))
+compiling (defmacro event-loop ((display event timeout force-output-p discard-p) . body) (list (quote let) (list ? ? ? ?) (quote ?) (list ? ? ?)))
+compiling (defun discard-current-event (display) (lets (? ? ?) (when current-event ?)))
+compiling (defmacro event-case (args . clauses) (or (null args) (consp args) (funcall ? args ?)) (comment declare (arglist ? ? |...|)) (cons (quote event-cond) (cons args ?)))
+compiling (defmacro event-cond ((display . keys) . clauses) (lets (?) (setplist x keys) (lets ? ?)))
+compiling (defmacro event-dispatch ((display event peek-p) . clauses) (let (? ?) (list ? ? ?)))
+compiling (defmacro binding-event-values ((display event-key event-keys . value-list) . body) (or (consp event-keys) (setq event-keys ?)) (let (? ?) (let ? ? ?)))
+gcc -c -I/usr/local/lib/utilisp/ -fwritable-strings -o compout/input.o -O /tmp/uti7545.c
+compiling (defun buffer-pad-request (buffer pad) (comment declare (type buffer buffer) (type array-index pad)) (unless (index-zerop pad) (when ? ?) (incf ? pad) (unless ? ?)))
+compiling (defun buffer-new-request-number (buffer) (setf (buffer-request-number buffer) (logand 65535 ?)))
+compiling (defun buffer-input (buffer vector start end (timeout)) (when (buffer-dead buffer) (x-error ? :display buffer)) (unless (= start end) (let ? ? result)))
+compiling (defun buffer-input-wait (buffer timeout) (when (buffer-dead buffer) (x-error ? :display buffer)) (let (?) (unless ? ?) result))
+compiling (defun read-sequence-string (buffer-bbuf length nitems result-type (buffer-boffset 0)) (declare (index count string-length start end) fix-value) (let (?) (do* ? ? ? ?)))
+compiling (defun read-string-card8-with-transform (reply-buffer nitems data transform start index) (declare (j end index) fix-value) (with-buffer-input (reply-buffer :index index) (do* ? ? ?)))
+compiling (defun read-string-card8 (reply-buffer nitems data start index) (with-buffer-input (reply-buffer) (buffer-replace data buffer-bbuf start ? index)))
+compiling (defun read-list-card16 (reply-buffer nitems data start index) (comment decleare (type reply-buffer reply-buffer) (type array-index nitems start index) (type list data)) (with-buffer-input (reply-buffer :sizes ? :index index) (do* ? ? ? ?)))
+compiling (defun read-list-card16-with-transform (reply-buffer nitems data transform start index) (comment decleare (type reply-buffer reply-buffer) (type array-index nitems start index) (type list data)) (comment decleare (type ? transform) (downward-funarg transform)) (with-buffer-input (reply-buffer :sizes ? :index index) (do* ? ? ? ?)))
+compiling (defun read-vector-card16 (reply-buffer nitems data start index) (with-vector (data vector) (with-buffer-input ? ?)))
+compiling (defun read-vector-card16-with-transform (reply-buffer nitems data transform start index) (with-vector (data vector) (with-buffer-input ? ?)))
+compiling (defun read-sequence-card16 (reply-buffer result-type nitems (transform) (data) (start 0) (index 0)) (let (?) (cond ? ?) result))
+compiling (defun read-list-card32 (reply-buffer nitems data start index) (declare (nitems start index j) fix-value) (with-buffer-input (reply-buffer :sizes ? :index index) (do* ? ? ?)))
+compiling (defun read-list-card32-with-transform (reply-buffer nitems data transform start index) (declare (nitems start index j) fix-value) (with-buffer-input (reply-buffer :sizes ? :index index) (do* ? ? ?)))
+compiling (defun read-vector-card32 (reply-buffer nitems data start index) (declare (nitems start index j end) fix-value) (with-vector (data vector) (with-buffer-input ? ?)))
+compiling (defun read-vector-card32-with-transform (reply-buffer nitems data transform start index) (declare (nitems start index j end) fix-value) (comment decleare (type reply-buffer reply-buffer) (type array-index nitems start index) (type vector data)) (comment decleare (type ? transform) (downward-funarg transform)) (with-vector (data vector) (with-buffer-input ? ?)))
+compiling (defun read-sequence-card32 (reply-buffer result-type nitems (transform) (data) (start 0) (index 0)) (let (?) (cond ? ?) result))
+compiling (defun write-vector-card16 (buffer boffset data start end) (with-vector (data vector) (writing-buffer-chunks card16 ? ? ?)) nil)
+compiling (defun write-vector-card16-with-transform (buffer boffset data start end transform) (with-vector (data vector) (writing-buffer-chunks card16 ? ? ?)) nil)
+gcc -c -I/usr/local/lib/utilisp/ -fwritable-strings -o compout/buffer.o -O /tmp/uti7545.c
+compiling (defun create-gcontext (&rest options &key (drawable ?) function plane-mask foreground background line-width ???) (comment declare (type drawable drawable) (type ? function) (type ? plane-mask foreground background) (type ? line-width dash-offset) (type ? ts-x ts-y clip-x clip-y) (type ? line-style) (type ? cap-style) ???) (comment declare (values gcontext)) (let* (? ? ? ? ?) (comment declare ? ? ? ?) (setf ? gcontextid) (unless function ?) (unless plane-mask ?) (unless foreground ?) (unless background ?) (unless line-width ?) ???))
+gcc -c -I/usr/local/lib/utilisp/ -fwritable-strings -o compout/gcontext.o -O /tmp/uti7545.c
+compiling (defparameter *reply-timeout* nil)
+compiling (defun card8->int8 (x) (cond (? x) (t ?)))
+compiling (defun int8->card8 (x) (logand 255 x))
+compiling (defun card16->int16 (x) (cond (? x) (t ?)))
+compiling (defun int16->card16 (x) (logand 65535 x))
+compiling (defun card32->int32 (x) (cond (? x) (t ?)))
+compiling (defun int32->card32 (x) (cons (logand 65535 ?) (logand 65535 ?)))
+compiling (defun aref-card8 (a i) (sref a i))
+compiling (defun aset-card8 (v a i) (sset a i v))
+compiling (defun aref-int8 (a i) (card8->int8 (sref a i)))
+compiling (defun aset-int8 (v a i) (sset a i (int8->card8 v)))
+compiling (defun aref-card16 (a i) (cutout a i 2))
+compiling (defun aset-card16 (v a i) (sset a i (logand 255 ?)) (sset a (index1+ i) (logand 255 v)) v)
+compiling (defun aref-int16 (a i) (card16->int16 (cutout a i 2)))
+compiling (defun aset-int16 (v a i) (sset a i (logand 255 ?)) (sset a (index1+ i) (logand 255 v)) v)
+compiling (defun aref-card32 (a i) (cons (cutout a i 2) (cutout a ? 2)))
+compiling (defun aset-card32 (v a i) (cond (? ? ? ? ?) (? ?) (t ? ? ? ?)) v)
+compiling (defun aref-int32 (a i) (card32->int32 (aref-card32 a i)))
+compiling (defun aset-int32 (v a i) (aset-card32 v a i) v)
+compiling (defun aref-card29 (a i) (cons (logand 2047 ?) (cutout a ? 2)))
+compiling (defun aset-card29 (v a i) (aset-card32 v a i) v)
+compiling (defun rgb-val->card16 (value) (fix (/+$ ? +0.5000000^+00)))
+compiling (defun card16->rgb-val (value) (//$ (float value) +0.6553500^+05))
+compiling (defun radians->int16 (value) (fix (/+$ +0.5000000^+00 ?)))
+compiling (defun int16->radians (value) (//$ (float value) +0.6400000^+02))
+compiling (defun char->card8 (char) char)
+compiling (defun card8->char (card8) card8)
+compiling (macro without-aborts (body) (cons (quote progn) body))
+compiling (defmacro conditional-store (place old-value new-value) (list (quote without-interrupts) (list ? ?)))
+compiling (defmacro wrap-buf-output ((buffer) . body) (cons (quote unless) (cons ? body)))
+compiling (defmacro wrap-buf-input ((buffer) . body) (cons (quote progn) body))
+compiling (defun open-x-stream (host display protocol) (let (?) (or fd ?) fd))
+warning: assumed non-macro --- connect-to-server (in open-x-stream)
+compiling (defun fd-char-avail-p (fd) (eq 1 (fd-wait-for-input fd 0)))
+warning: assumed non-macro --- fd-wait-for-input (in fd-char-avail-p)
+compiling (defun buffer-read-default (display vector start end timeout) (lets (? ?) (or ? ?)))
+warning: assumed non-macro --- fd-read-bytes (in buffer-read-default)
+compiling (defun buffer-write-default (vector display start end) (fd-write-bytes (display-output-stream display) vector start (/- end start)))
+warning: assumed non-macro --- fd-write-bytes (in buffer-write-default)
+compiling (defun buffer-force-output-default (display) nil)
+compiling (defun buffer-close-default (display (abort nil) (ignore)) (fd-close (display-output-stream display)))
+warning: assumed non-macro --- fd-close (in buffer-close-default)
+compiling (defun buffer-input-wait-default (display (timeout 0)) (let (?) (and ? ?)))
+warning: assumed non-macro --- fd-wait-for-input (in buffer-input-wait-default)
+compiling (defun buffer-listen-default (display) (let (?) (if ? t ?)))
+compiling (defun buffer-replace (buf1 buf2 start1 end1 (start2 0)) (string-amend buf1 (substring buf2 start2 ?) start1))
+compiling (defconstant *type-check?* nil)
+compiling (defmacro type? (object type) (match (eval type) (? ?) (? ?) (@ ?)))
+compiling (defun x-type-error (obj type (error-string)) (cond (? ?) (t ?)))
+warning: assumed non-macro --- error-string (in x-type-error)
+compiling (defun default-error-handler (display error-key key-vals) (let (?) (if ? ? ? ?)))
+compiling (defmacro x-error (error-key . rest) (list (quote progn) (list ? ? error-key ?) (quote ?)))
+compiling (defmacro x-cerror (msg error-key . rest) (list (quote format) (quote "X-CERROR: /c:/s /s/n") msg error-key (list ? rest)))
+gcc -c -I/usr/local/lib/utilisp/ -fwritable-strings -o dependent.o -O /tmp/uti7545.c
+compiling (defun plus32 (a b) (lets (? ?) (declare ? fix-value) (cons ? ?)))
+compiling (defun inc32 (a) (lets (? ?) (cons h ?)))
+compiling (defun dec32 (a) (lets (? ?) (cons ? ?)))
+compiling (defun fix32 (a) (cond (? a) (? ?) (t ?)))
+compiling (defun fix32p (a) (and (consp a) (fixp ?) (fixp ?)))
+compiling (defun card32->big (a) (plus (times ? 65536) (cdr a)))
+compiling (defun logor32 (a b) (cons (logor ? ?) (logor ? ?)))
+compiling (defun logand32 (a b) (cons (logand ? ?) (logand ? ?)))
+compiling (defun logxor32 (a b) (cons (logxor ? ?) (logxor ? ?)))
+compiling (defun lognot32 (a) (logxor32 a (quote ?)))
+compiling (defun logshift32 (a count) (cond (? a) (? ?) (t ?)))
+compiling (defun zerop32 (x) (and (zerop ?) (zerop ?)))
+compiling (defun oddp32 (x) (oddp (cdr x)))
+compiling (defun plusp32 (x) (not (or ? ?)))
+compiling (defun logbitp32 (pos val) (declare (pos) fix-value) (let (? ?) (declare ? fix-value) (not ?)))
+compiling (defun byte32 (mask first) (cons mask first))
+compiling (defun dpb32 (newbyte bytespec int) (logor32 (cond ? ?) int))
+gcc -c -I/usr/local/lib/utilisp/ -fwritable-strings -o longarith.o -O /tmp/uti7545.c
+compiling (in-package (quote xlib) :use (quote (lisp)))
+compiling (export (quote (draw-point draw-points draw-line draw-lines draw-segments draw-rectangle draw-rectangles draw-arc draw-arcs ???)))
+compiling (defvar *inhibit-appending* nil)
+compiling (defun draw-point (drawable gcontext x y) (comment declare (type drawable drawable) (type gcontext gcontext) (type int16 x y)) (let (?) (comment declare ?) (with-display ? ? ?) (display-invoke-after-function display)))
+compiling (defun draw-points (drawable gcontext points (relative-p)) (comment declare (type drawable drawable) (type gcontext gcontext) (type sequence points) (type boolean relative-p)) (with-buffer-request (? *x-polypoint* :gc-force gcontext) (? relative-p) (drawable drawable) (gcontext gcontext) (? points)))
+compiling (defun draw-line (drawable gcontext x1 y1 x2 y2 (relative-p)) (comment declare (type drawable drawable) (type gcontext gcontext) (type int16 x1 y1 x2 y2) (type boolean relative-p)) (let (?) (comment declare ?) (when relative-p ? ?) (with-display ? ? ?) (display-invoke-after-function display)))
+compiling (defun draw-lines (drawable gcontext points &key relative-p fill-p (shape ?)) (comment declare (type drawable drawable) (type gcontext gcontext) (type sequence points) (type boolean relative-p fill-p) (type ? shape)) (if fill-p (fill-polygon drawable gcontext points relative-p shape) (with-buffer-request ? ? ? ? ?)))
+compiling (defun fill-polygon (drawable gcontext points relative-p shape) (comment declare (type drawable drawable) (type gcontext gcontext) (type sequence points) (type boolean relative-p) (type ? shape)) (with-buffer-request (? *x-fillpoly* :gc-force gcontext) (drawable drawable) (gcontext gcontext) (? shape) (boolean relative-p) (? points)))
+compiling (defun draw-segments (drawable gcontext segments) (comment declare (type drawable drawable) (type gcontext gcontext) (type sequence segments)) (with-buffer-request (? *x-polysegment* :gc-force gcontext) (drawable drawable) (gcontext gcontext) (? segments)))
+compiling (defun draw-rectangle (drawable gcontext x y width height (fill-p)) (comment declare (type drawable drawable) (type gcontext gcontext) (type int16 x y) (type card16 width height) (type boolean fill-p)) (let (? ?) (comment declare ? ?) (with-display ? ? ?) (display-invoke-after-function display)))
+compiling (defun draw-rectangles (drawable gcontext rectangles (fill-p)) (comment declare (type drawable drawable) (type gcontext gcontext) (type sequence rectangles) (type boolean fill-p)) (with-buffer-request (? ? :gc-force gcontext) (drawable drawable) (gcontext gcontext) (? rectangles)))
+compiling (defun draw-arc (drawable gcontext x y width height angle1 angle2 (fill-p)) (comment declare (type drawable drawable) (type gcontext gcontext) (type int16 x y) (type card16 width height) (type angle angle1 angle2) (type boolean fill-p)) (let (? ?) (comment declare ? ?) (with-display ? ? ?) (display-invoke-after-function display)))
+compiling (defun draw-arcs-list (drawable gcontext arcs (fill-p)) (comment declare (type drawable drawable) (type gcontext gcontext) (type list arcs) (type boolean fill-p)) (let* (? ? ? ?) (with-buffer-request ? ? ? ?)))
+compiling (defun draw-arcs-vector (drawable gcontext arcs (fill-p)) (comment declare (type drawable drawable) (type gcontext gcontext) (type vector arcs) (type boolean fill-p)) (let* (? ? ? ?) (with-buffer-request ? ? ? ?)))
+compiling (defun draw-arcs (drawable gcontext arcs (fill-p)) (comment declare (type drawable drawable) (type gcontext gcontext) (type sequence arcs) (type boolean fill-p)) (cond (? ?) (? ?)))
+compiling (defun put-raw-image (drawable gcontext data &key (start 0) (depth ?) (x ?) (y ?) (width ?) ???) (comment declare (type drawable drawable) (type gcontext gcontext) (type sequence data) (type array-index start) (type card8 depth left-pad) (type int16 x y) (type card16 width height) ???) (with-buffer-request (? *x-putimage* :gc-force gcontext) (? format) (drawable drawable) (gcontext gcontext) (card16 width height) (int16 x y) (card8 left-pad depth) (pad16 nil) ???))
+compiling (defun get-raw-image (drawable &key data (start 0) (x ?) (y ?) (width ?) (height ?) (plane-mask -1) ???) (comment declare (type drawable drawable) (type ? data) (type int16 x y) (type card16 width height) (type array-index start) (type pixel plane-mask) (type ? format)) (comment declare (values ? depth visual-info)) (let (?) (with-buffer-request-and-reply ? ? ?)))
+gcc -c -I/usr/local/lib/utilisp/ -fwritable-strings -o graphics.o -O /tmp/uti7545.c
+compiling (in-package (quote xlib) :use (quote (lisp)))
+compiling (export (quote (open-font discard-font-info close-font list-font-names list-fonts font-path)))
+compiling (deftype char-info-vec nil (quote (simple-array int16 ?)))
+compiling (defmacro def-char-info-accessors (useless-name . fields) (append (quote ?) (list ?) (do ? ? ? ? ?) (list ?)))
+warning: assumed special --- type (in func8073)
+compiling (def-char-info-accessors ignore (left-bearing int16) (right-bearing int16) (width int16) (ascent int16) (descent int16) (attributes card16))
+compiling (defun open-font (display name) (comment declare (type display display) (type stringable name)) (comment declare (values font)) (lets (? ? ?) (and font ?) (unless font ? ? ? ? ?) (incf ?) font))
+compiling (defun open-font-internal (font) (comment declare (type font font)) (comment declare (values resource-id)) (let* (? ? ?) (setf ? id) (with-buffer-request ? ? ? ? ?) (cl:push font ?) (incf ?) id))
+compiling (defun discard-font-info (font) (comment declare (type font font)) (setf (font-font-info-internal font) nil (font-char-infos-internal font) nil))
+compiling (defun query-font (font) (let (? ? ? ?) (setq font-id ?) (with-buffer-request-and-reply ? ? ?) (do ? ? ?) (setf ? props) font-info))
+compiling (defun close-font (font) (comment declare (type font font)) (when (and ? ?) (let ? ? ? ?)))
+warning: assumed non-macro --- delete (in close-font)
+compiling (defun list-font-names (display pattern &key (max-fonts 65535) (result-type ?)) (let (?) (with-buffer-request-and-reply ? ? ?)))
+compiling (defun list-fonts (display pattern &key (max-fonts 65535) (result-type ?)) (let (? ?) (with-buffer-request-and-reply ? ? ?) (dolist ? ?) (coerce ? result-type)))
+warning: assumed special --- /.reply-buffer (in _list-fonts)
+warning: assumed non-macro --- coerce (in _list-fonts)
+compiling (defun font-path (display &key (result-type ?)) (comment declare (type display display) (type t result-type)) (comment declare (values ?)) (with-buffer-request-and-reply (display *x-getfontpath* size :sizes ?) nil (progn ?)))
+compiling (defun set-font-path (display paths) (comment declare (type display display) (type sequence paths)) (let (? ?) (dotimes ? ?) (with-buffer-request ? ? ? ? ?)))
+compiling (defsetf font-path set-font-path)
+gcc -c -I/usr/local/lib/utilisp/ -fwritable-strings -o fonts.o -O /tmp/uti7545.c
+compiling (defun initialize-resource-allocator (display) (let (?) (unless ? ?)))
+compiling (defun resourcealloc (display) (comment declare (type display display)) (comment declare (values resource-id)) (dpb32 (setf ? ?) (display-resource-id-byte display) (display-resource-id-base display)))
+compiling (defmacro allocate-resource-id (display object type) (if (cl:member ? *clx-cached-types*) (list ? ? ? ?) (list ? ? display)))
+compiling (defmacro deallocate-resource-id (display id type) (when (cl:member ? *clx-cached-types*) (list ? display id)))
+compiling (defun deallocate-resource-id-internal (display id) (remhash id (display-resource-id-map display)))
+compiling (defun lookup-resource-id (display id) (gethash id (display-resource-id-map display)))
+compiling (defsetf gethash puthash)
+compiling (defun save-id (display id object) (comment declare (type display display) (type integer id) (type t object)) (comment declare (values object)) (setf (gethash id ?) object))
+compiling (defun make-xatom (&key display id) (atom-name-internal display id))
+compiling (defmacro generate-lookup-functions (useless-name . types) (append (quote ?) (list ?) (mapcar types ?)))
+compiling (generate-lookup-functions ignore drawable window pixmap gcontext cursor colormap font ???)
+compiling (defun atom-id (atom display) (comment declare (type xatom atom) (type display display)) (comment declare (values ?)) (gethash (if ? atom ?) (display-atom-cache display)))
+compiling (defun set-atom-id (atom display id) (comment declare (type xatom atom) (type display display) (type resource-id id)) (comment declare (values resource-id)) (setf (gethash ? ?) id))
+compiling (defsetf atom-id set-atom-id)
+compiling (defun initialize-predefined-atoms (display) (do (? ? ?) (?) (set-atom-id ? display ?) (when save-p ?)))
+compiling (defun visual-info (display visual-id) (comment declare (type display display) (type resource-id visual-id) (values visual-info)) (and (not ?) (or ? ?)))
+compiling (defmacro with-display ((display . keys) . body) (cons (quote with-buffer) (cons ? body)))
+compiling (defmacro with-event-queue ((display . keys) . body) (cons (quote progn) body))
+compiling (defmacro with-event-queue-internal ((display . key) . body) (cons (quote progn) body))
+compiling (defun open-display (host (display 0) (protocol) (authorization-name) (authorization-data)) (lets (? ? ?) (progn ? ? ? ?) (unless ok-p ?) disp))
+compiling (defun display-force-output (display) (with-display (display) (buffer-force-output display)))
+compiling (defun close-display (display &key abort) (close-buffer display abort))
+compiling (defun display-connect (display authorization-name authorization-data) (unless authorization-name (setq authorization-name "")) (unless authorization-data (setq authorization-data "")) (with-buffer-output (display) (card8-put 0 ?) (card16-put 2 *protocol-major-version*) (card16-put 4 *protocol-minor-version*) (card16-put 6 ?) (card16-put 8 ?) (write-sequence-char display 12 authorization-name) (write-sequence-char display ? authorization-data)) (buffer-force-output display) (let (?) (progn ? ?) (when reply-buffer ?)) display)
+compiling (defun display-protocol-version (display) (values (display-protocol-major-version display) (display-protocol-minor-version display)))
+compiling (defun display-vendor (display) (values (display-vendor-name display) (display-release-number display)))
+compiling (defun display-nscreens (display) (cl:length (display-roots display)))
+compiling (defvar *inside-display-after-function* nil)
+compiling (defun display-invoke-after-function (display) (when (and ? ?) (let ? ?)))
+compiling (defun display-finish-output (display) (with-buffer-request-and-reply (display *x-getinputfocus* 16 :sizes ?) nil) (report-asynchronous-errors display (quote :after-finish-output)))
+compiling (defparameter *request-names* (quote V#13560135))
+gcc -c -I/usr/local/lib/utilisp/ -fwritable-strings -o display.o -O /tmp/uti7545.c
+compiling (defparameter *version* "MIT R4")
+compiling (defparameter *protocol-major-version* 11)
+compiling (defparameter *protocol-minor-version* 0)
+compiling (defparameter *x-tcp-port* 6000)
+compiling (def-ulx-class (color (:constructor make-color-internal ?) (:copier nil) (:print-function print-color)) (red +0.0000000^+00 :type rgb-val) (green +0.0000000^+00 :type rgb-val) (blue +0.0000000^+00 :type rgb-val))
+compiling (defun make-color (&key (red +0.1000000^+01) (green +0.1000000^+01) (blue +0.1000000^+01) &allow-other-keys) (make-color-internal :red red :green green :blue blue))
+compiling (defun color-rgb (color) (values (color-red color) (color-green color) (color-blue color)))
+compiling (def-ulx-class (bitmap-format (:copier nil)) (unit 8 :type (member 8 16 32)) (pad 8 :type (member 8 16 32)) (lsb-first-p nil :type boolean))
+compiling (def-ulx-class (pixmap-format (:copier nil)) (depth 0 :type image-depth) (bits-per-pixel 8 :type (member 1 4 8 16 24 32)) (scanline-pad 8 :type (member 8 16 32)))
+compiling (defparameter *atom-cache-size* 200)
+compiling (defparameter *resource-id-map-size* 500)
+compiling (def-ulx-class (display (:include buffer) (:constructor make-display-internal) (:print-function print-display) (:copier nil)) (host) (display 0 :type integer) (after-function nil) (event-lock) (event-queue-lock) (event-queue-tail nil :type (or null reply-buffer)) (event-queue-head nil :type (or null reply-buffer)) ???)
+compiling (defun print-display (display stream depth) (printing-object (display stream) (princ ? stream) (princ ":" stream) (princ ? stream) (princ " (" stream) (princ ? stream) (princ " R" stream) (prin1 ? stream) ???))
+compiling (deftype drawable nil (quote (or window pixmap)))
+compiling (def-ulx-class (drawable (:copier nil) (:print-function print-drawable) (:predicate nil)) (id 0 :type resource-id) (display nil :type (or null display)) (plist nil :type list))
+compiling (defun drawable-p (obj) (or (pixmap-p obj) (window-p obj)))
+compiling (defun print-drawable (drawable stream depth) (printing-object (drawable stream) (princ ? stream) (princ ":" stream) (princ ? stream) (princ " " stream) (prin1 ? stream)))
+compiling (def-ulx-class (window) (id 0 :type resource-id) (display nil :type (or null display)) (plist nil :type list))
+compiling (def-ulx-class (pixmap) (id 0 :type resource-id) (display nil :type (or null display)) (plist nil :type list))
+compiling (def-ulx-class (visual-info (:copier nil) (:print-function print-visual-info)) (id 0 :type resource-id) (display nil :type (or null display)) (class (quote :static-gray) :type (member :static-gray :static-color :true-color :gray-scale :pseudo-color :direct-color)) (red-mask 0 :type pixel) (green-mask 0 :type pixel) (blue-mask 0 :type pixel) (bits-per-rgb 1 :type card8) ???)
+compiling (defun print-visual-info (visual-info stream depth) (printing-object (visual-info stream) (prin1 ? stream) (princ "-bit " stream) (princ ? stream) (princ " " stream) (princ ? stream) (princ ":" stream) (princ ? stream) ???))
+compiling (def-ulx-class (colormap (:copier nil) (:print-function print-colormap)) (id 0 :type resource-id) (display nil :type (or null display)) (visual-info nil :type (or null visual-info)))
+compiling (defun print-colormap (colormap stream depth) (printing-object (colormap stream) (when ? ? ?) (princ ? stream) (princ ":" stream) (princ ? stream) (princ " " stream) (prin1 ? stream)))
+compiling (def-ulx-class (cursor (:copier nil) (:print-function print-cursor)) (id 0 :type resource-id) (display nil :type (or null display)))
+compiling (defun print-cursor (cursor stream depth) (printing-object (cursor stream) (princ ? stream) (princ ":" stream) (princ ? stream) (princ " " stream) (prin1 ? stream)))
+compiling (defconstant *predefined-atoms* (quote V#14408819))
+compiling (defconstant *bit-gravity-vector* (quote V#14411763))
+compiling (deftype bit-gravity nil (quote (member :forget :north-west :north :north-east :west :center :east :south-west ???)))
+compiling (defconstant *win-gravity-vector* (quote V#14416799))
+compiling (deftype win-gravity nil (quote (member :unmap :north-west :north :north-east :west :center :east :south-west ???)))
+compiling (deftype grab-status nil (quote (member :success :already-grabbed :invalid-time :not-viewable)))
+compiling (deftype alist nil (quote list))
+compiling (quote (repeat-seq (int16 x) (int16 y) (card16 width) (card16 height) (angle angle1) (angle angle2)))
+compiling (def-ulx-class (gcontext (:copier nil) (:print-function print-gcontext)) (id 0 :type resource-id) (display nil :type (or null display)) (drawable nil :type (or null drawable)) (cache-p t :type boolean) (server-state (allocate-gcontext-state) :type gcontext-state) (local-state (allocate-gcontext-state) :type gcontext-state) (plist nil :type list) ???)
+compiling (defun print-gcontext (gcontext stream depth) (printing-object (gcontext stream) (princ ? stream) (princ ":" stream) (princ ? stream) (princ " " stream) (prin1 ? stream)))
+compiling (defconstant *event-mask-vector* (quote V#14491895))
+compiling (deftype event-mask-class nil (quote (member :key-press :key-release :owner-grab-button :button-press :button-release :enter-window :leave-window :pointer-motion ???)))
+compiling (quote (or mask32 list))
+compiling (defconstant *pointer-event-mask-vector* (quote V#14498227))
+compiling (quote (member :button-press :button-release :enter-window :leave-window :pointer-motion :pointer-motion-hint :button-1-motion :button-2-motion ???))
+compiling (quote (or mask32 list))
+compiling (defconstant *device-event-mask-vector* (quote V#14501903))
+compiling (quote (member :key-press :key-release :button-press :button-release :pointer-motion :button-1-motion :button-2-motion :button-3-motion ???))
+compiling (deftype device-event-mask nil (quote (or mask32 list)))
+compiling (defconstant *state-mask-vector* (quote V#14507267))
+compiling (deftype modifier-key nil (quote (member :shift :lock :control :mod-1 :mod-2 :mod-3 :mod-4 :mod-5)))
+compiling (deftype modifier-mask nil (quote (or ? mask16 list)))
+compiling (deftype state-mask-key nil (quote (or modifier-key ?)))
+compiling (defconstant *gcontext-components* (quote (:function :plane-mask :foreground :background :line-width :line-style :cap-style :join-style :fill-style ???)))
+compiling (deftype gcontext-key nil (quote (member :function :plane-mask :foreground :background :line-width :line-style :cap-style :join-style ???)))
+compiling (deftype event-key nil (quote (member :key-press :key-release :button-press :button-release :motion-notify :enter-notify :leave-notify :focus-in ???)))
+compiling (deftype error-key nil (quote (member :access :alloc :atom :colormap :cursor :drawable :font :gcontext ???)))
+compiling (deftype draw-direction nil (quote (member :left-to-right :right-to-left)))
+compiling (defconstant *boole-vector* (quote V#14530727))
+compiling (deftype boole-constant nil (list (quote member) boole-clr boole-and boole-andc2 boole-1 boole-andc1 boole-2 boole-xor ???))
+compiling (def-ulx-class (screen (:copier nil) (:print-function print-screen)) (root nil :type (or null window)) (width 0 :type card16) (height 0 :type card16) (width-in-millimeters 0 :type card16) (height-in-millimeters 0 :type card16) (depths nil :type (alist ? ?)) (root-depth 1 :type image-depth) ???)
+compiling (defun print-screen (screen stream depth) (printing-object (screen stream) (let ? ? ? ? ? ?) (princ " " stream) (prin1 ? stream) (princ "x" stream) (prin1 ? stream) (princ "x" stream) (prin1 ? stream) ???))
+compiling (defun screen-root-visual (screen) (visual-info-id (screen-root-visual-info screen)))
+compiling (deftype font-props nil (quote list))
+compiling (def-ulx-class (font-info (:copier nil) (:predicate nil)) (direction :left-to-right :type draw-direction) (min-char 0 :type card16) (max-char 0 :type card16) (min-byte1 0 :type card8) (max-byte1 0 :type card8) (min-byte2 0 :type card8) (max-byte2 0 :type card8) ???)
+compiling (def-ulx-class (font (:constructor make-font-internal) (:copier nil) (:print-function print-font)) (id-internal nil :type (or null resource-id)) (display nil :type (or null display)) (reference-count 0 :type fixnum) (name "" :type (or null string)) (font-info-internal nil :type (or null font-info)) (char-infos-internal nil :type (or null ?)) (local-only-p t :type boolean) ???)
+compiling (defun print-font (font stream depth) (printing-object (font stream) (if ? ? ?) (princ " " stream) (princ ? stream) (princ ":" stream) (princ ? stream) (when ? ? ?)))
+compiling (proclaim (quote (inline font-font-info font-char-infos make-font)))
+compiling (defun font-id (font) (or (font-id-internal font) (open-font-internal font)))
+compiling (defun font-font-info (font) (or (font-font-info-internal font) (query-font font)))
+compiling (defun font-char-infos (font) (or (font-char-infos-internal font) (progn ? ?)))
+compiling (defun make-font (&key id display (reference-count 0) (name "") (local-only-p t) font-info-internal) (make-font-internal :id-internal id :display display :reference-count reference-count :name name ???))
+compiling (defmacro make-font-info-accessors (useless-name . fields) (append (quote ?) (mapcan fields ?)))
+compiling (make-font-info-accessors ignore (direction draw-direction) (min-char card16) (max-char card16) (min-byte1 card8) (max-byte1 card8) (min-byte2 card8) (max-byte2 card8) ???)
+compiling (defun font-property (font name) (comment declare (type font font) (type keyword name)) (comment declare (values ?)) (getf (font-properties font) name))
+compiling (defmacro make-mumble-equal (type) (let (? ? ?) (if ? ? ?)))
+compiling (make-mumble-equal window)
+compiling (make-mumble-equal pixmap)
+compiling (make-mumble-equal cursor)
+compiling (make-mumble-equal font)
+compiling (make-mumble-equal gcontext)
+compiling (make-mumble-equal colormap)
+compiling (make-mumble-equal drawable)
+compiling (defun encode-mask (key-vector key-list key-type) (cond (? key-list) (? ?)))
+compiling (defun decode-mask (key-vector mask) (do (? ? ? ?) (? result) (comment declare ? ? ?) (when ? ?)))
+compiling (defun encode-event-mask (event-mask) (or (encode-mask *event-mask-vector* event-mask ?) (x-type-error event-mask ?)))
+compiling (defun make-event-mask (&rest keys) (encode-mask *event-mask-vector* keys (quote event-mask-class)))
+compiling (defun make-event-keys (event-mask) (decode-mask *event-mask-vector* event-mask))
+compiling (defun encode-device-event-mask (device-event-mask) (or (encode-mask *device-event-mask-vector* device-event-mask ?) (x-type-error device-event-mask ?)))
+compiling (defun encode-modifier-mask (modifier-mask) (or (encode-mask *state-mask-vector* modifier-mask ?) (and ? 32768) (x-type-error modifier-mask ?)))
+compiling (defun encode-state-mask (state-mask) (or (encode-mask *state-mask-vector* state-mask ?) (x-type-error state-mask ?)))
+compiling (macro make-state-mask (keys) (list (quote encode-mask) (quote *state-mask-vector*) (list ? keys) (quote ?)))
+compiling (defun make-state-keys (state-mask) (comment declare (type mask16 state-mask)) (comment declare (values ?)) (decode-mask *state-mask-vector* state-mask))
+compiling (defun encode-pointer-event-mask (pointer-event-mask) (comment declare (type pointer-event-mask pointer-event-mask)) (comment declare (values mask32)) (or (encode-mask *pointer-event-mask-vector* pointer-event-mask ?) (x-type-error pointer-event-mask ?)))
+gcc -c -I/usr/local/lib/utilisp/ -fwritable-strings -o ulx.o -O /tmp/uti7545.c
+In file included from /tmp/uti7545.c:1:
+/tmp/uti7545.h:477: redefinition of `drawable_p_literal'
+/tmp/uti7545.h:452: `drawable_p_literal' previously declared here
+/tmp/uti7545.h:477: warning: initializer-string for array of chars `drawable_p_literal' is too long
+/tmp/uti7545.h:479: redefinition of `drawable_p_info'
+/tmp/uti7545.h:454: `drawable_p_info' previously declared here
+/tmp/uti7545.c:3593: redefinition of `drawable_p_cf'
+/tmp/uti7545.c:3404: `drawable_p_cf' previously declared here
+error: c-compile error --- "gcc -c -I/usr/local/lib/utilisp/ -fwritable-strings -o ulx.o -O /tmp/uti7545.c" (in *toplevel*)
+@ touch compout/*.l compout/*.o
+mv script script-

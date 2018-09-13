@@ -1,0 +1,41 @@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+UTILISP_LIBDIR = @libdir@/utilisp
+
+LFILES = lispsys.l lispsys.main.l
+OFILES = lispsys.main.o
+
+all : @compile@
+
+install : install_lfiles @install_ofiles@
+
+compile : lispsys.main.o
+	cd lisplib; make ofiles
+	cd lispcomp; make ofiles
+
+$(OFILES) : $(LFILES)
+	UTILISP_LIB_PATH=./ UTILISP_HEADER_PATH=../src ../src/utilisp -N -n < makeall.l
+
+install_lfiles :
+	-mkdir -p $(UTILISP_LIBDIR)
+	cp $(LFILES) $(UTILISP_LIBDIR)
+	cd $(UTILISP_LIBDIR); chmod 644 $(LFILES)
+	cd lisplib; make LIBDIR='$(UTILISP_LIBDIR)' install_lfiles
+	cd lispcomp; make LIBDIR='$(UTILISP_LIBDIR)' install_lfiles
+
+install_ofiles :
+	-mkdir -p $(UTILISP_LIBDIR)
+	cp $(OFILES) $(UTILISP_LIBDIR)
+	cd $(UTILISP_LIBDIR); chmod 644 $(OFILES)
+	cd lisplib; make LIBDIR='$(UTILISP_LIBDIR)' install_ofiles
+	cd lispcomp; make LIBDIR='$(UTILISP_LIBDIR)' install_ofiles
+
+uninstall_ofiles :
+	cd $(UTILISP_LIBDIR); rm -f $(OFILES)
+	cd lisplib; make LIBDIR='$(UTILISP_LIBDIR)' uninstall_ofiles
+	cd lispcomp; make LIBDIR='$(UTILISP_LIBDIR)' uninstall_ofiles
+
+clean :
+	-rm -f $(OFILES)
+	cd lisplib; make clean
+	cd lispcomp; make clean

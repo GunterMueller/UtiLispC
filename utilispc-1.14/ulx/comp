@@ -1,0 +1,4 @@
+#!/bin/sh
+OBJ=`basename $1 .c`.o
+set -x
+gcc -c -I/usr/local/lib/utilisp/ -fwritable-strings -o $OBJ $1

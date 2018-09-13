@@ -1,0 +1,471 @@
+\documentstyle{jarticle}
+
+\title{{\Large\dg CLX, ULX}\\{\large 研究室輪講資料}}
+\date{1990年11月6日}
+\author{研究生 長橋 賢児}
+
+\def\baselinestretch{1.2}
+\begin{document}
+\bigskip
+\maketitle
+\medskip
+
+\section{CLX}
+CLX は Common Lisp 上で X-window を直接利用するためのライブラリである。
+開発したのは MIT の Robert W. Scheifler らで Texas Intruments
+Incoporated が著作権を所有している。
+
+\medskip
+
+X-window システムのクライアントプログラムはバイトストリームを介して
+X サーバに接続
+し、プロトコルにしたがってパケットをやりとりする。\cite{protcol} クライアントからサー
+バに送られるパケットは``リクエスト'' と呼ばれ、逆にサーバからクライア
+ントには ``リプライ''、``エラー''、``イベント'' の3種類のパケットが送
+られてくる。パケットは ASCII の文字列ではなくバイナリデータの羅列であ
+る(表 \ref{Xpacket})。
+\smallskip
+
+C 言語用には Xlib というパッケージが X プロトコルを扱うために用意され
+ている。Xlib はプロトコロルの各リクエストに対応した C の関数を提供して
+クライアントのプログラムが所定のパラメータと共にそれを呼び出すとパッケッ
+トを構成してバッファにためておき順次X のサーバに送信する。またX サーバ
+から送信されてきたイベントなどのパケットもバッファにためておいて要求に
+応じてクライアントのコードに引き渡す。
+
+\begin{table}
+\small
+CreateWindow
+
+\begin{tabular}{clll}
+バイト長 & データ型 & \multicolumn{2}{c}{内容} \\
+1 & 1 &&	opcode \\
+1 & CARD8	&& depth \\
+2 & 8+n		&& request length \\
+4 & WINDOW	&& wid \\
+4 & WINDOW	&& parent \\
+2 & INT16	&& x \\
+2 & INT16	&& y \\
+2 & CARD16	&& width \\
+2 & CARD16	&& height \\
+2 & CARD16	&& border-width \\
+2 & 		&& class \\
+  & 0		& CopyFromParent &\\
+  & 1		& InputOutput &\\
+  & 2		& InputOnly &\\
+4 & VISUALID	&& visual \\
+4 & BITMASK	&& value-mask (has n bits set to 1) \\
+  & \#x00000001 & background-pixmap &\\
+  & \#x00000002 & background-pixel &\\
+  & \#x00000004 & border-pixmap &\\
+  & \#x00000008 & border-pixel &\\
+  & \#x00000010 & bit-gravity &\\
+  & \#x00000020 & win-gravity &\\
+  & \#x00000040 & backing-store &\\
+  & \#x00000080 & backing-planes &\\
+  & \#x00000100 & backing-pixel &\\
+  & \#x00000200 & override-redirect &\\
+  & \#x00000400 & save-under &\\
+  & \#x00000800 & event-mask &\\
+  & \#x00001000 & do-not-propagate-mask &\\
+  & \#x00002000 & colormap &\\
+  & \#x00004000 & cursor &\\
+4n& LISTofVALUE&& value-list
+\end{tabular}
+\caption{X のパケットの例}
+\label{Xpacket}
+\end{table}
+
+%\begin{table}
+%\begin{tabular}{lll}
+%プロトコルリクエスト & 
+
+Common Lisp の処理系から Xlib を呼び出すコードを書き Xlib をリン
+クすることによって X-window システムを利用することも（処理系によっては）
+可能である。この場合 Xlib と Lisp の間を結ぶコードを C なりで書くことにな
+るのだがこのコードは Lisp の内部構造に依存するから
+大半はシステム依存のコードになるし
+この方法自体 Lisp マシンでは使えない。
+そこで CLX は Xlib に相当するコード（X サーバとの通信、パ
+ケットの構成を含む）を Common Lisp のコードによっ
+て記述していて、Common Lisp の条件つき評価の機能を使って複数の処理系に
+対応している。
+処理系によっては通信機能を持たないために C のコードを若干含むものもあ
+る。
+\medskip
+
+ユーザとのインタフェースは Common Lisp の keyword argument の機能など
+を使って使いやすくできているという印象である。Lisp を使うことの利点の
+一つは関数へのパラメータの与え方の自由度が大きいということがある。例え
+ば Xlib にはウィンドウを作るための関数が XCreateWindow と 
+XCreateSimpleWindow の2種類用意されている。プロトコルに対応するのは
+XCreateWindow の方であるが指定しなければならないパラメータが多いので
+ユーザの便宜をはかってたいていは XCreateSimpleWindow を使えばいいようになっ
+ている。一方 CLX では {\tt create-window} という関数だけを用意し、パラ
+メータを省略すれば XCreateSimpleWindow に相当するようになっている。
+
+また Xlib では省略可能な多数のパラメータを指定するために
+構造体とvaluemask という形式をよく使う。たとえば XCreateWindow の
+{\sl attribute} パラメータと{\sl valuemask}がそうでXSetWindowAttributes という構造体に
+必要な値だけを入れ、マスク設定したパラメータに対応するビットを立てたも
+のを{\sl valuemask} に与えることになっている。これはプロトコルのパケッ
+トの構造に対応しているのであるが、ユーザから見ればかなり面倒である。
+かといってすべて別々に引数として与えるのではもっと面倒になる。
+
+Lisp ではこのようなパラメータもほかのパラメータと全く同じに扱ってわか
+りやすいインタフェイスを提供できる。CLX のユーザ関数ではリクエストのすべてのパラメー
+タはキーワードとその値という二つ組で渡され順序は自由である。省略できる
+パラメータについては指定がなければデフォルトの値が設定され（C では省略す
+る、ということを指定しなければならない）、プロトコルの構造は関数には現
+れていない。
+
+\begin{quote}
+C(Xlib) の場合:
+
+XCreateWindow({\sl display}, {\sl parent}, {\sl x}, {\sl y}, {\sl
+width}, {\sl height}, {\sl border\_width}, {\sl depth}, {\sl class},
+{\sl visual}, {\sl valuemask}, {\sl attributes})
+\begin{tabbing}
+\hspace{1cm} \= Display *{\sl display}\/;\\
+\> Window {\sl parent}\/;\\
+\> int {\sl x},{\sl y}\/;\\
+\> unsigned int {\sl width},{\sl height}\/;\\
+\> unsigned int {\sl border\_width}\/;\\
+\> int {\sl depth}\/;\\
+\> Visual *{\sl visual}\/;\\
+\> unsigned long {\sl valuemask}\/;\\
+\> XSetWindowAttributes *{\sl attributes}\/;\\
+\end{tabbing}
+
+\begin{verbatim}
+XSetWindowAttributes wa;
+
+wa.background_pixel = blackpixel;
+wa.border_pixel = redpixel;
+wa.bit_grabity = ...
+
+XCreateWindow(display, ... , visual,CWBackPixel|CWBorderPixel|CWBitgravity, &wa);
+...
+\end{verbatim}
+\end{quote}
+
+\begin{quote}
+CLX の場合:
+\begin{verbatim}
+(defun create-window (&key parent x y width (depth 0) (border-width 0)
+                     (class :copy) (visual :copy)
+                     background border grabity bit-grabity
+                     backing-store backing-planes backing-pixel save-under
+                     event-mask do-not-propagate-mask override-redirect
+                     colormap cursor)
+        ...
+
+(create-window :parent parent :backing-pixel blackpixel
+	        :border redpixel :bit-grabity ... )
+\end{verbatim}
+\end{quote}
+
+
+\section{ULX}
+現在漢字フォント合成のグループでは utilisp をベースにプログラムの開発
+が進んでいる。
+X window を利用したツールを作る必要があって今のところ Utilisp から 
+Xlib を呼び出すためのコードを C で書き、utilisp に Xlib をリンクするこ
+とで行なっている。このコードは utilisp から X を簡単に使えるように
+いくつかのリクエストをまとめて一つの lisp 関数にしてある。
+簡単なツールのうちはこれでいいがこれからより複雑な
+ツールを作っていこうとすると不自由になりそうである。
+
+そこで UtiLisp にも完全な X ライブラリがあれば、ということになった。
+Utilisp に X と
+のインタフェースを組み込むことを考えると、移植性が必要なわけではないし
+別に(Xlib のソースを変更するなりして)全てのコードを C で書いてもいいわ
+けで特にすべてを lisp で記述する必要性はないかもしれないが
+これはかなり手間
+である。すべてのデータを Lisp のオブジェクトとして持つことにすれば C 
+のコードから Lisp のオブジェクトにアクセスするコードを膨大に書かねばな
+らない。一方ですべてのデータを C の方に持たせるとコードが難しく自由度
+が低くなる上 lisp からこのデータのアクセスするための関数をこれまた膨大
+に（しかも大半は構造体にアクセスしてそのメンバを lisp オブジェクトとし
+て返すだけ）書かなければならない。
+
+こう考えると UtiLisp でも CLX のように大半を lisp で書いて
+ULX (UtiLisp X interface) を作るのが妥当だろう。
+（実際は CLX を移植するという結論が先で、他はあとからつけた理由づけで
+はあるが）。
+
+\section{CLX の Utilisp への移植}
+そこで考えられるのが CLX の UtiLisp への移植である。せっかくすでに書か
+れたコードがあるのだからこれを利用しない手はない。CLX のコードは2万5千
+行ほどだが最初多少苦労しても少々の変更で移植する方法はないだろうか。
+CLXがサポートしているマシンの中には並列Lispマシンもありその環境に対応
+するためにコードが複雑化しているようだ。ひとまず並列環境のためのコード
+を削ってしまえば意外と簡単になるのではないかと（いまのところ）思われる。
+
+CLXをそのまま UtiLisp 上で動かすことはとうていできない。CLX は Common Lisp の機
+能をふんだんに利用していて、その大半は utilisp にない機能だからである。
+CLX のコードを UtiLisp に流用しようとして今まで障害となったのは（至極簡単に解決
+できるものも含めて）Common Lisp と UtiLisp との次のような違いである。
+
+\begin{enumerate}
+\item \label{flowcontrols}
+制御構造が少ない。
+{\tt unless}, {\tt when}, {\tt while}, {\tt if} \dots {\tt then}, など
+がない。これはごく簡単なマクロ
+を書くことで解決する。
+
+\item \label{structs}
+struct を扱えない。{\tt deftype} がない。CLX は window や display などを 
+struct を用いて表現している。また各種のパラメータに対して型を定義して
+チェックを行なっている。
+
+\item \label{networkprims}
+ネットワークを介して通信するプリミティブ、UNIX の select, read, wite 
+システムコールに当たるプリミティブがない。
+
+\item \label{lambdalists}
+ラムダリストの指定がCommon Lisp ほど多機能ではない。Common Lisp はラム
+ダリストにキーワードと
+呼ばれるものを用いることができたり、不定個の引数をとれるなどの機能があ
+る。CLX ではこれを利用して不要なパラメータは指定しなくてもよい、指定の
+順序はどうでもよい、という自由なインタフェースを作っている。
+
+\item \label{fixnumlimit}
+fixnum は 28bit しか扱えない。X のプロトコルでは 29bit, 32bit のデータ
+を扱う必要がある。Common Lisp の規格 \cite{commonlisp} では Common Lisp は最低でも 16bit 
+の fixnum をサポートすること、ということになっているがさすがに CLX で
+は 32bit fixnum を扱えることを前提にしている。
+
+\item \label{macro}
+マクロの記述でsplicing ({\tt ,@})が使えない。これは記述が面倒になるも
+ののマクロを等価な表現に書き換えていけば対処できる。
+
+\item \label{multibind}
+多値関数がサポートされていない。CLX では {\tt muiltiple-value-bind} な
+どの形式を多用している。これは結果のリストを明示的に扱う形式に書き換え
+るしかないだろうと考えている。
+ユーザが利用する関数にも多値関数があるので多少インタ
+フェースが変わることになる。
+\end{enumerate}
+
+\noindent これらの違いを吸収するためにいままでにとった方策をあげてみる。
+\medskip
+
+\subsection{OS インタフェースのプリミティブ}
+これはしょうがないので C で書いてリンクする。とりあえずサーバに接続す
+るための {\tt connect-to-server}, select にあたる {\tt fd-wait-for-input},
+read/write に相当する {\tt unixread}, {\tt unixwrite} (仮称) を書いた。
+
+\subsection{struct}
+\ref{structs} を解決するのはかなり厄介である。common lisp で struct を定義すると
+そのメンバにアクセスする関数、オブジェクトを作る関数（コンストラクタ）
+などが自動的に定義され、しかも struct を一つの型として型チェックもでき
+る。型チェックはまだしも、window の属性を含んだオブジェクトを 
+{\tt (make-window)} で作ることができ、そのメンバに {\tt (window-background
+...)} のようにアクセスできるという機能は捨てがたい。struct 自体はベク
+タで代用するとしてコンストラクタやメンバアクセス関数をどうするかであ
+るが、すくなくとも一つ一つ手で書くということだけはしたくない。
+
+結局今のところ CLX で使われている形式そのままで呼び出すと、ベクタとそ
+れにたいするアクセサ関数、コンストラクタ関数をマクロとして生成するマク
+ロを書いた。ユーザの立場からすると型チェックも欲しいところであるが、今
+のところ無視している。型チェックはシンボルでなくオブジェクトそのものに
+属性がつかないといけないので、はてどうしたものかと考えているところであ
+る。ベクタで表されるオブジェクトはベクタの最初の要素を型名のシンボルに
+するというのが一つの考え。
+
+このコードは ULX 内部で使うためのものだが、ユーザのために Common Lisp 
+の {\tt defstruct} と形式的に同じことをするマクロを書いておくと便利であろう。
+
+\begin{small}
+\begin{verbatim}
+(defun get-sym (x)
+  (cond ((consp x)(car x))(t x)))
+
+(defmacro def-ulx-class (name . members)
+  (let ((form nil)
+        (class (get-sym name))
+        (defvs nil)
+        (mem-index-assoc nil))
+    (do ((index 0 (1+ index))
+         (m members (cdr m)))
+        ((atom m) index)
+        (push (cons (get-sym (car m)) index) mem-index-assoc)
+        (push (cond ((consp (car m))(cadar m))(t nil)) defvs)
+        (push `(defmacro ,(intern-name class (get-sym (car m))) (obj . val)
+                 (cond (val (list 'vset obj ,index (car val)))
+                       (t (list 'vref obj ,index))))
+              form))
+    (push `(macro ,(intern-name "make" class) (init)
+                  `(let ((v (copy-vector ,(get ',class 'default))))
+                     . ,(do ((i init (cddr i))
+                             (res '(v))) ; include return value
+                            ((or (atom i)(atom (cdr i))) res)
+                            (push `(,(intern-name ',class (eval (first i)))
+                                    v ,(second i)) res))))
+          form)
+    (push `(putprop ',class ',mem-index-assoc 'mem-index-assoc) form)
+    (push `(putprop ',class ,(vector (length defvs)(nreverse defvs)) 'default) form)
+    `(progn . ,form)))
+
+(defun intern-name  (s1 s2) (intern (string-append s1 "-" s2)))
+
+(defun copy-vector (v) (vector (vector-length v) v))
+
+;; 使い方の例
+
+(def-ulx-class (buffer (:constructor nil) (:copier nil) (:predicate nil))
+  ;; Lock for multi-processing systems
+  (lock (make-process-lock "CLX Buffer Lock"))
+  ;#-excl (output-stream nil :type (or null stream))
+  ;#+excl (output-stream -1 :type fixnum)
+  (output-stream -1 :type fixnum)
+  ;; Buffer size
+  (size 0 :type array-index)
+  (request-number 0 :type (unsigned-byte 16))
+  ;; Byte position of start of last request
+  ;; used for appending requests and error recovery
+  (last-request nil :type (or null array-index))
+  ;; Byte position of start of last flushed request
+  (last-flushed-request nil :type (or null array-index))
+  ;; Current byte offset
+  (boffset 0 :type array-index)
+  ;; Byte (8 bit) output buffer
+  ...
+
+\end{verbatim}
+\end{small}
+
+\subsection{ラムダリスト(試案)}
+UtiLisp では不定個の引数をもつ関数はマクロを用いれば書くことができる。
+この方法で逃げることにし、不定個の引数をとる関数はすべて一回マクロで引
+数をリストに直して本来の関数を呼ぶ形に書き直す。
+
+キーワードは単なるシンボルで代用することにして、引数のリストからそれを
+抽出して変数に代入するためのマクロを作る。関数をこれを用いたものに書き
+直さなければならないしオーバーヘッドもあるが書き直しはかなり少なく
+て済む。
+
+\begin{small}
+\begin{verbatim}
+(defmacro binding-keywords (arg decl . body)
+  `(let ,(mapcar decl
+                 (function (lambda (x) (cond ((atom x) '(x nil)) (t x)))))
+     (do ((a arg (cddr a)))
+         ((atom a))
+         (selectq (car a) .
+                  ,(maplist decl
+                            (function (lambda (x)
+                                        (let ((sym (cond ((atom (first x))(first x))
+                                                         (t (caar x)))))
+                                          `(,sym
+                                            (setq ,sym (second a)))))))))
+     . ,body))
+\end{verbatim}
+
+\noindent 元のコード
+\begin{verbatim}
+(defun create-window (&key
+                      (parent (required-arg parent))
+                      (x (required-arg x))
+                      (y (required-arg y))
+                      (width (required-arg width))
+                      (height (required-arg height))
+                      (depth 0) (border-width 0)
+                      (class :copy) (visual :copy)
+                      background border
+                      bit-gravity gravity
+                      backing-store backing-planes backing-pixel save-under
+                      event-mask do-not-propagate-mask override-redirect
+                      colormap cursor)
+  (let* ((display (window-display parent))
+         (window (make-window :display display))
+         (wid (allocate-resource-id display window 'window))
+         back-pixmap back-pixel
+         border-pixmap border-pixel)
+    (setf (window-id window) wid)
+    (case background
+      ((nil) nil)
+      (:none (setq back-pixmap 0))
+      (:parent-relative (setq back-pixmap 1))
+      (otherwise
+       (if (type? background 'pixmap)
+           (setq back-pixmap (pixmap-id background))
+         (if (integerp background)
+             (setq back-pixel background)
+           (x-type-error background
+           ...
+\end{verbatim}
+
+\noindent これを次のように書き換える。
+\begin{verbatim}
+(macro create-window (args)
+       `(create-window-f ',args))
+
+(defun create-window-f (arglist)
+  (binding-keywords
+   (arglist
+    (parent       ;required
+     x            ;required
+     y            ;required
+     width        ;required
+     height       ;required
+     (depth 0) (border-width 0)
+     (class 'copy) (visual 'copy)
+     background border
+     bit-gravity gravity
+     backing-store backing-planes backing-pixel save-under
+     event-mask do-not-propagate-mask override-redirect
+     colormap cursor)
+   ;; ここに reqired argument が指定されているかどうかのチェックを入れる。
+    (lets ((display (window-display parent))
+           (window (make-window 'display display))
+           (wid (allocate-resource-id display window 'window))
+           (back-pixmap nil)
+           (back-pixel nil)
+           (border-pixmap nil)
+           (border-pixel nil))
+          (window-id window wid)
+          (selectq background
+                   (nil nil)
+                   (none (setq back-pixmap 0))
+                   (parent-relative (setq back-pixmap 1))
+                   (t (if (fixp (car k))       ;; 型チェックがちゃんとできないので手抜き
+                          (setq back-pixel background)
+                        (setq back-pixmap (pixmap-id background)))
+        ...
+\end{verbatim}
+\end{small}
+
+\subsection{32bit の整数}
+bignum を使おうかとも思ったが、ビット操作や変換が面倒になりそうなので
+(高位16bit . 下位16bit) という形で表現することにする。しかしこれにして
+も依然として bit 操作などが面倒であることはいなめない。
+32bit データはバイナリデータと、window などに対するリソースID を保持す
+るために使われるが、リソースID は中に一定の構造があるようなのでそれに
+あわせて変更すると使いやすくなる可能性はある。
+
+\section{現状とこれから}
+ULX の製作は現在進行中である。今回までになんとかウィンドウぐらいは開き
+たかったが間に合わなかった。現在はパケットのバッファリングの部分のコー
+ディングをしており、これが終われば今度は各プロトコルリクエストに対応す
+る関数のコーディングに入る。今書いている部分がうまくできればこれより上
+位の部分はわずかの書換えで進めるものと予想している。
+
+\begin{thebibliography}{9}
+\bibitem{utilispman} {\em UtiLisp Manual Revision 2.0}, Jan. 1988 Wada
+Laboratory.
+
+\bibitem{commonlisp} Guy L. Steele Jr. {\em COMMON LISP second
+edition}, Digital Press.
+
+\bibitem{CLXman} Keith Cessna et al. {\em CLX Programmer's Reference},
+(included in the  X11R4 distribution).
+
+\bibitem{protcol} Robert W. Scheifler {\em X window System Protocol},
+(included in the X11R4 distribution).
+\end{thebibliography}
+
+%\input{clientexample}
+\end{document}
+

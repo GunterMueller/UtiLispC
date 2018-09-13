@@ -1,0 +1,267 @@
+\input texinfo @c -*-texinfo-*-
+@c %**start of header
+@setfilename clx.info
+@settitle CLX
+@c %**end of header
+
+@titlepage
+@title CLX
+@end titlepage
+
+@chapter Types
+@ignore
+boolean
+card32
+card29
+card24
+int32
+card16
+int16
+card8
+int8
+card4
+
+base-char 'string-char
+rgb-val '(real 0 1)
+angle '(real #.(* -2 pi) #.(* 2 pi))
+mask32 'card32
+mask16 'card16
+pixel '(unsigned-byte 32)
+image-depth '(integer 0 32)
+resource-id 'card29
+keysym 'card32
+
+color (struct (red green blue))
+bitmap-format (struct (unit pad lsb-first-p))
+pixmap-format (struct (depth bits-per-pixel scanline-pad))
+display (struct ...)
+drawable '(struct (id display plist))
+window 'drawable
+pixmap 'drawable
+visual-info (struct (id display class red-mask green-mask blue-mask ...))
+colormap (struct (id display visual-info))
+cursor (struct (id display))
+xatom '(or string symbol)
+stringable '(or string symbol)
+fontable '(or stringable font)
+timestamp '(or null card32)
+bit-gravity '(member :forget :north-west ...)
+win-gravity '(member :unmap :north-west ...)
+grab-status '(member :success :already-grabbed)
+alist (key-type-and name datus-type-and-name) 'list
+repeat-seq
+point-seq
+seg-seq
+rect-seq
+arc-seq
+gcontext-state 'simple-vector
+gcontext (struct (id display drawable cache-p server-state local-state))
+event-mask-class '(member :key-press :key-release ...)
+event-mask '(or mask32 list)
+pointer-event-mask-class '(member :button-press ...)
+pointer-event-mask '(or mask32 list)
+device-event-mask-class '(member :key-press)
+modifier-key '(member :shift :lock :control :mod-1 ...)
+modifier-mask '(or (member :any) mask16 list)
+state-mask-key '(or modifier-key (member :button-1 ....))
+gcontext-key '(member :function :plane-mask ...)
+event-key '(member :key-press :key-release ...)
+error-key '(member :access :alloc :atom ...)
+draw-direction '(member :left-to-right :right-to-left)
+boole-constant '(member ,boole-clr ...)
+screen (struct (root width height width-in-millimeters ...))
+font-info (struct (direction min-char max-char ...))
+font (struct (id-internal display ...))
+
+@end ignore
+
+@chapter Request
+@defun create-window &key :parent :x :y :width :height :depth :class :background :border :bit-gravity :gravity :backing-store :backing-planes :backing-pixel :save-under :event-mask :do-not-propagate-mask :override-redirect :colormap :cursor
+
+@end defun
+@defun destroy-window
+@end defun
+@defun destroy-subwindows
+@end defun
+@defun map-window
+@end defun
+@defun set-pointer-mapping
+@end defun
+@defun map-subwindows
+@end defun
+@defun unmap-window
+@end defun
+@defun unmap-subwindows
+@end defun
+@defun query-tree
+@end defun
+@defun intern-atom
+@end defun
+@defun find-atom
+@end defun
+@defun get-property
+@end defun
+@defun list-properties
+@end defun
+@defun set-selection-owner
+@end defun
+@defun selection-owner
+@end defun
+@defun grab-button
+@end defun
+@defun grab-pointer
+@end defun
+@defun ungrab-button
+@end defun
+@defun ungrab-pointer
+@end defun
+@defun send-event
+@end defun
+@defun change-active-pointer-grab
+@end defun
+@defun grab-keyboard
+@end defun
+@defun ungrab-keyboard
+@end defun
+@defun grab-key
+@end defun
+@defun ungrab-key
+@end defun
+@defun allow-events
+@end defun
+@defun grab-server
+@end defun
+@defun ungrab-server
+@end defun
+@defun query-pointer
+@end defun
+@defun global-pointer-position
+@end defun
+@defun motion-events
+@end defun
+@defun warp-pointer
+@end defun
+@defun warp-pointer-relative
+@end defun
+@defun warp-pointer-if-inside
+@end defun
+@defun warp-pointer-relative-if-inside
+@end defun
+@defun set-input-fucus
+@end defun
+@defun input-focus
+@end defun
+@defun query-keymap
+@end defun
+@defun create-pixmap
+@end defun
+@defun free-pixmap
+@end defun
+@defun clear-area
+@end defun
+@defun copy-area
+@end defun
+@defun copy-plane
+@end defun
+@defun create-colormap
+@end defun
+@defun free-colormap
+@end defun
+@defun copy-colormap-and-free
+@end defun
+@defun install-colormap
+@end defun
+@defun uninstall-colormap
+@end defun
+@defun installed-colormaps
+@end defun
+@defun alloc-color
+@end defun
+@defun alloc-color-cells
+@end defun
+@defun alloc-color-planes
+@end defun
+@defun free-colors
+@end defun
+@defun store-color
+@end defun
+@defun store-colors
+@end defun
+@defun query-color
+@end defun
+@defun create-cursor
+@end defun
+@defun create-glyph-cursor
+@end defun
+@defun free-cursor
+@end defun
+@defun recolor-cursor
+@end defun
+@defun query-best-cursor
+@end defun
+@defun query-best-tile
+@end defun
+@defun query-best-stipple
+@end defun
+@defun query-extension
+@end defun
+@defun list-extensions
+@end defun
+@defun chage-keyboard-control
+@end defun
+@defun keyboard-control
+@end defun
+@defun bell
+@end defun
+@defun pointer-mapping
+@end defun
+@defun pointer-control
+@end defun
+@defun screen-saver
+@end defun
+@defun activate-screen-saver
+@end defun
+
+@chapter Fonts
+@defun char-left-bearing font index
+@end defun
+@defun char-right-bearing
+@end defun
+@defun char-width
+@end defun
+@defun char-ascent
+@end defun
+@defun char-descent
+@end defun
+@defun char-attributes
+@end defun
+
+@defun max-char-left-bearing font
+@end defun
+
+@defun min-char-left-bearing font
+@end defun
+
+@defun open-font display name
+仮のfontを返す。nameに対応するフォントが実際には存在しなくても仮のfontを
+作って返すので存在のチェックには使えない。
+@end defun
+
+@defun xlib::query-font font
+@end defun
+
+@defun close-font font
+@end defun
+
+@defun list-font-names display pattern &key :max-fonts :result-type
+@end defun
+
+@defun list-fonts display pattern &key :max-fonts :result-type
+仮のfontを返す。font metricとpropertyはついているが文字ごとのmetricや
+resource-idはついていない。仮のfontは必要に応じて実際のfontに変えられる
+(OpenFontリクエストを発行---これが失敗することもありうる)。
+@end defun
+
+@defun font-path display &key :result-type
+setfable.
+@end defun

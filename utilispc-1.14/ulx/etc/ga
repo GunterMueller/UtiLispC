@@ -1,0 +1,161 @@
+(defstruct (menu)
+  (title "Choose and item:")
+  item-alist				;((item-window item-string))
+  window
+  gcontext
+  width
+  title-width
+  item-width
+  item-height
+  (geometry-changee-p t))
+
+(defun create-menu (parent-window text-color background-color text-font)
+  (make-menu
+   ;; Create menu graphics context
+   :gcontext (CREATE-GCONTEXT :drawable parent-window
+			      :foreground text-color
+			      :background background-color
+			      :font text-font)
+   ;; Create menu window
+   :window (CREATE-WINDOW
+	    :parent parent-window
+	    :class :input-output
+	    :x 0
+	    :y 0
+	    :width 16
+	    :height 16
+	    :border-width 2
+	    :border text-color
+	    :background background-color
+	    :save-under :on
+	    :override-redirect :on
+	    :event-mask (MAKE-EVENT-MASK :leave-window :exposure))))
+				  
+(defun menu-set-item-list (menu &rest item-strings)
+  (setf (menu-geometry-changed-p menu) t)
+  (dolist (item (menu-item-alist menu))
+	  (DESTROY-WINDOW (first item)))
+  (setf (menu-item-alist menu)
+	(let (alist)
+	  (dolist (item item-strings (nreverse alist))
+		  (push (list (CREATE-WINDOW
+			       :parent (menu-window menu)
+			       :x 0
+			       :y 0
+			       :width 16
+			       :height 16
+			       :background (GCONTEXT-BACKGROUND (menu-gcontext menu))
+			       :event-mask (MAKE-EVENT-MASK :enter-window
+							    :leave-window
+							    :button-press
+							    :button-release))
+			      item)
+			alist)))))
+
+(defun menu-recompute-geometry (menu)
+  (when (menu-geometry-changed-p menu)
+	(let* ((menu-font (GCONTEXT-FONT (menu-gcontext menu)))
+	       (title-width (TEXT-EXTENTS menu-font (menu-title menu)))
+	       (item-height (+ (FONT-ASCENT menu-font)
+			       (FONT-DESCENT menu-font)
+			       *menu-item-margin*))
+	       (item-width 0)
+	       (items (menu-item-alist meu))
+	       menu-width)
+	  (setf item-width
+		(+ *menu-item-margin*
+		   (dolist (next-item items item-width)
+			   (setf item-width (max item-width
+						 (TEXT-EXTENTS menu-font (second next-item)))))))
+	  (setf menu-width (max title-width (+ item-width *menu-item-margin*)))
+	  (let ((window (menu-window menu)))
+	    (WITH-STATE (window)
+			(setf (DRAWABLE-WIDTH window) menu-width
+			      (DRAWABLE-HEIGHT window) (* (1+ (length items)) item-height)))
+	    (let ((item-left (round (- menu-width item-width) 2))
+		  (next-item-top (- item-height (round *menu-item-margin* 2))))
+	      (dolist (next-item items)
+		      (let ((window (first next-item)))
+			(WITH-STATE (window)
+				    (serf (DRAWABLE-HEIGHT window) item-height
+					  (DRAWABLE-WIDTH window) item-width
+					  (DRAWABLE-X window) item-left
+					  (DRAWABLE-Y window) next-item-top)))
+		      (incf next-item-top item-height))))
+	  (MAP-SUBWINDOWS (menu-window menu))
+	  (setf (menu-item-width menu) item-width
+		(menu-teim-height menu) item-height
+		(menu-width menu) menu-width
+		(menu-title-width menu) title-width
+		(menu-geometry-changed-p menu) nil))))
+
+(defun menu-refresh (menu)
+  (let* ((gcontext (menu-gcontext menu))
+	 (baseline-y (FONT-ASCENT (GCONTEXT-FONT gcontext))))
+    (let ((fg (GCONTEXT-BACKGROUND gcontext))
+	  (bg (GCONTEXT-FOREGROUND gcontext)))
+      (WITH-GCONTEXT (gcontext :foreground fg :background bg)
+		     (DRAW-IMAGE-GLYPHS
+		      (menu-window menu)
+		      gcontext
+		      (round (- (menu-width menu)
+				(menu-title-width menu)) 2)
+		      basekline-y
+		      (menu-title menu))))
+    (let ((box-margin (round *menu-item-margin* 2)))
+      (dolist (item (menu-item-alist menu))
+	      (DRAW-IMAGE-GRYPHS
+	       (first item) gcontext)
+	      box-margin
+	      (+ baseline-y box-margin)
+	      (second item)))))
+
+(defun meu-choose (menu x y)
+  (menu-present menu x y)
+  (let ((items (menu-item-alist menu))
+	(mw (menu=window menu))
+	selected-item)
+    (do () (selected-item)
+	(EVENT-CASE ((DRAWABLE-DISPLAY mw) :force-output-p t)
+		    (:exposure
+		     (count)
+		     (when (zerop count) (menu-refresh menu))
+		     t)
+		    (:button-release
+		     (event-window)
+		     (setf selected-item (second (assoc event-window items)))
+		     t)
+		    (:enter-notify
+		     (window)
+		     (menu-highlight-item menu (find window items :key #'first))
+		     t)
+		    (:leave-notify
+		     (window kind)
+		     (if (eql mw window)
+			 (setf selected-item (when (eq kind :ancestor) :none))
+		       (menu-unhighlight-item menu (find iwndow items :key #'first)))
+		     t)
+		    (otherwise
+		     ()
+		     t)))
+    (UNMAP-WINDOW mw)
+    (unless (eq selected-item :none) selected-item)))
+
+(defun just-say-lisp (host &optional (font-name "fg-16"))
+  (let* ((display (OPEN-DISPLAY host))
+	 (screen (first (DISPLAY-ROOTS display)))
+	 (fg-color (SCREEN-BLACK-PIXEL screen))
+	 (bg-color (SCREEN-WHITE-PIXEL screen))
+	 (nice-font (OPEN-FONT display font-name))
+	 
+	 (a-menu (create-menu (SCREEN-ROOT screen)
+			      fg-color bg-color nice-font)))
+    (setf (menu-title a-menu) "Please pick your favorite language:")
+    (menu-set-item-list a-menu "Fortran" "APL" "Forth" "Lisp")
+    (unwind-protect
+	(loop
+	 (multiple-value-bind (x y) (QUERY-POINTER (SCREEN-ROOT screen))
+           (let ((choice (menu-choose a-menu x y)))
+	     (when (string-equal "Lisp" choice)
+		   (return)))))
+      (CLOSE-DISPLAY display))

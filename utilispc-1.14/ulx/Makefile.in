@@ -1,0 +1,117 @@
+# $Revision: 1.5 $
+# Makefile for ULX.
+#
+#
+#
+INSTALL = @INSTALL@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+# Directory in which to install scripts.
+bindir = @bindir@
+UTILISP = $(bindir)/utilisp
+
+# Directory in which to install library files.
+libdir = @libdir@
+UTILISP_LIBDIR = ${libdir}/utilisp
+LISPSYS = $(libdir)/lispsys.l
+
+.SUFFIX:
+.SUFFIX: .o .l .c
+
+CC = @CC@
+CFLAGS = -I../src @CFLAGS@ @DEFS@
+ULXSRC = attributes.l buffer.l bufmac.l depdefs.l dependent.l \
+	display.l fonts.l gcontext.l graphics.l image.l input.l \
+	keysyms.l macros.l manager.l requests.l resource.l text.l \
+	translate.l ulx.l
+SUPPORTSRC = commonlib.l longarith.l ulxlib.l defsetf.l
+INSTDIR = $(UTILISP_LIBDIR)/ulx
+PCOMPFILE = requests.l text.l input.l buffer.l \
+	gcontext.l
+TCOMPFILE = dependent.l longarith.l graphics.l fonts.l display.l \
+	ulx.l attributes.l
+REMOUT = remout
+COMPOUT = compout
+PCOMPOBJ = $(PCOMPFILE:%.l=$(COMPOUT)/%.o)
+TCOMPOBJ = $(TCOMPFILE:%.l=%.o)
+COBJS = socket.o 
+LOADULX_TMPL=loadulx.m
+M4=@M4@
+PERL=@PERL@
+
+all: socket.o compile
+
+socket.o: socket.c
+	$(CC) $(CFLAGS) @SHARED_OPTION@ socket.c
+
+loadulx.l: $(LOADULX_TMPL)
+	#sed -e 's/PREF/./' -e 's/LIB/./' loadulx.tmpl > loadulx.l
+	$(M4) -DPREF=. -DLIB=. -DALLSRC loadulx.m > loadulx.l
+
+recompile: rmobj compile
+
+compile: rmscript $(PCOMPOBJ) $(TCOMPOBJ) compileall
+
+rmobj: FORCE
+	for i in $(TCOMPOBJ) $(PCOMPOBJ); do \
+	  rm -f $$i; \
+	done
+
+rmscript: FORCE
+	rm -f script
+	touch script
+
+compileall: FORCE
+	-mkdir $(COMPOUT)
+	if test -s script; then \
+	  UTILISP_LIB_PATH=../lib/ UTILISP_HEADER_PATH=../src ../src/utilisp -h 7000 -N -n < compfunc.script; \
+	fi
+	touch $(COMPOUT)/*.l $(COMPOUT)/*.o
+	-mv script script-
+
+compileall-old: FORCE
+	-mkdir $(COMPOUT)
+	if test -s script; then \
+	  UTILISP_LIB_PATH=../lib/ UTILISP_HEADER_PATH=../src ../src/utilisp < compfunc.script.old; \
+	fi
+	touch $(COMPOUT)/*.l $(COMPOUT)/*.o
+
+%.o: %.l
+	echo \(compfile \"$*.l\" \"$*.o\"\) >> script
+
+$(COMPOUT)/%.o: $(COMPOUT)/%.l
+	-mkdir $(COMPOUT)
+	echo \(compfile \"$(COMPOUT)/$*.l\" \"$(COMPOUT)/$*.o\"\) >> script
+	
+$(COMPOUT)/%.l: %.l compfunc.list
+	-mkdir $(COMPOUT)
+	touch $@
+	$(PERL) tool/coldef.pl -B$(REMOUT) $*.l < compfunc.list > comp.temp
+	diff comp.temp $@ > /dev/null || mv comp.temp $@
+	rm -f comp.temp
+
+FORCE:
+# other utility rules.
+tag:
+	etags *.l
+
+install:
+	cp $(ULXSRC) $(SUPPORTSRC) ${INSTDIR}
+	cp $(REMOUT)/*.l $(INSTDIR)
+	cp *.o $(COMPOUT)/*.o $(INSTDIR)
+	#sed -e 's/PREF/ulx/' \
+	#    -e 's:LIB:/usr/local/lib/utilisp/ulx:' loadulx.tmpl \
+	#    > $(INSTDIR)/loadulx.l
+	$(M4) -DPREF=ulx -DLIB=$(UTILISP_LIBDIR)/ulx loadulx.m \
+	     > $(INSTDIR)/loadulx.l
+	#cp ${OBJS} ${INSTDIR}
+
+# distribute UtiLisp to guri,gura
+dist: FORCE
+	rdist -f distuti
+
+clean: FORCE
+	rm -f *.o
+	rm -f $(REMOUT)/* $(COMPOUT)/*
+	rm -f script-

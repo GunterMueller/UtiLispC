@@ -1,0 +1,16 @@
+2000/9/18
+constdef.h の checkchar で，STRINGを引数として与えた時に，文字列の長さ
+をチェックしていない．長さが0の場合は0を返す．
+
+-> 実害はないので，仕様にする?
+
+print_flonumの中で，
+
+  unsigned char strbuf[STRBUFSIZE];
+に対して，
+
+  sprintf(buf,"%%+%d.%df^",dig+2,dig);
+  sprintf(strbuf,buf,fval);
+
+としているが，あふれさせることは可能
+-> 深刻なバグ

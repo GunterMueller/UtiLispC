@@ -1,0 +1,21 @@
+
+# SUBDIR = src lib ulx
+SUBDIR = src lib 
+
+all : ${SUBDIR}
+
+install : ${SUBDIR}
+	cd src; make install 
+	cd lib; make install 
+
+clean :
+	cd src; make clean
+	cd lib; make clean
+
+src: FRC
+	cd $@; $(MAKE) all
+
+lib: src
+	cd $@; $(MAKE) all
+
+FRC :
