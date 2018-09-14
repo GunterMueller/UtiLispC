@@ -259,7 +259,7 @@
 
 (defun c:make-gcc (cf of)
    (string-append
-      "gcc @SHARED_OPTION@ -I"
+      "gcc -m32 @SHARED_OPTION@ -I"
       system_header_path
 ;      " -fwritable-strings -o "
        " -o "
